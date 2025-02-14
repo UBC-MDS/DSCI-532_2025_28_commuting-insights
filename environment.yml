@@ -13,4 +13,4 @@ dependencies:
     - pip = 25.0.1
     - geopandas = 1.0.1
     - pip:
-        - dash-vega-components = 0.11.0
+        - dash-vega-components
