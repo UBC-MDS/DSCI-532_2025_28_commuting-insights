@@ -17,11 +17,40 @@ Through this comparison, the project will provide insights into how different re
 
 ## Description of the data
 
+The dataset comes from [Statistics Canada](https://www.statcan.gc.ca/en/start) which is the national statistical office that offeres access to key information on Canada's economy, society and environment. The selected dataset is called "Commuting duration by main mode of commuting and time arriving at work" and is located in this [path](https://www150.statcan.gc.ca/t1/tbl1/en/tv.action?pid=9810050301&geocode=A000011124). 
 
+The dashboard will be visualizing a dataset of approximately 103,000 aggregated rows that contain commuting information in different census divisions and provices across Canada. Each example contains 12 associated variables
+that describe the following charateristics, which we hypothesize could be helpful in comparing commuting status across regions in Canada:
+
+- Geographical identifiers: `GEO`, `DGUID`, `Coordinate`
+- Time of day range for commuting: `Time arriving at work`
+- Mode of transportation: `Main mode of commuting`
+- Count of records considered in aggregate: `Commuting duration:Total - Commuting duration`,
+- Count of records by range of commuting time: `Commuting duration:Less than 15 minutes`, `Commuting duration:15 to 29 minutes`, `Commuting duration:30 to 44 minutes`, `Commuting duration:45 to 59 minutes`,  Commuting duration:60 minutes and over`
+- Average commute duration: `Commuting duration:Average commuting duration (in minutes)`
+
+While data aggregates such as commute count proportion by mode of commuting will be calculated, no other features are being considered to be engineered at the time of this report creation. However, additional information that would have proven useful in this dashboard would have been `total amount of minutes spent commuting by time range` to understand the origin of the featured `Commuting duration:Average commuting duration (in minutes)`, as well as `distance traversed during commute` could have been useful to gain insight regarding commuting habits across different regions.
+
+The following table describes the data types of the columns planned to be used for the dashboard
+
+| Data type               | Columns                                                      |
+|-------------------------|--------------------------------------------------------------|
+| Categorical - Nominal   | `GEO`, `DGUID`, `Coordinate`, `Main mode of commuting`       |
+| Caterorical - Ordinal   | `Time arriving at work`                                      |
+| Numeric - Integer       | All commuting durations                                      |
+| Numeric - Float         | `Commuting duration:Average commuting duration (in minutes)` |
+
+Note, the original data set contains six additional columns under the name "Symbol_" that will be be used for purposes of this project as they do not hold any relevant information. Additionally, a column named "REF_DATE" will not be used as it contains the year of the census data only, which is 2021 for all records.
 
 ## Research questions and usage scenarios
 
+Persona description of a member of intended target audience: 
 
+Joel is a policy maker, member of [Transport Canada](https://tc.canada.ca/en) and he wants to gain insight as to how different means of transportation and different times of the day for commuting affect the duration of the population's commute. He particularly is interested in exploring how these habits compare between provinces and census divisions. He intends to use these insights to inform and frame his intervention policy in his own province and census division.
+
+When Joel logs into the Commuting Insights application, he will be able to overview official census data, apply filters to downselect a sample of interest by region and means of transportation and use a geographical visualization of Canada that displays descriptive statistics in the form of a heatmap. He will also be able to access visualizations that describe variables of interest such as commuting time averages, proportion of commutes by means of transportation, how commute time varies through different times of day, to make head to head visual comparisons between different regions of interest.
+
+Based on findings from using the Commuting Insights app, Joel will be able to perform follow up analysis to hypothesize how different means of transportation and commuting time of day affects the average commuting time for different regios across Canada. Based on this insight, Joel will be able to inform his policy intervention framework.
 
 ## App sketch & brief description
 
