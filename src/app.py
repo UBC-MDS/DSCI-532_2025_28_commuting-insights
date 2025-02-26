@@ -30,6 +30,8 @@ dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 # Create the Dash app
 app = dash.Dash(__name__)
 
+server = app.server
+
 app.layout = html.Div([
     html.H3("Average Commute Time by Census Division"),
 
@@ -91,4 +93,4 @@ def update_map(selected_modes):
 
 # Run the app
 if __name__ == "__main__":
-    app.server.run(port=8000, host="127.0.0.1", debug=True)
+    app.run(debug=False)
