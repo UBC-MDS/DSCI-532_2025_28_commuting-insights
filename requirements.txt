@@ -1,0 +1,7 @@
+altair==5.5.*
+dash==2.18.*
+dash-bootstrap-components==1.7.*
+dash-vega-components==0.11.*
+geopandas==1.0.*
+pandas==2.2.*
+plotly==6.0.*
