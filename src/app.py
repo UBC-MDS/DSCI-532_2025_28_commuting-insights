@@ -6,6 +6,10 @@ import plotly.express as px
 import json
 import os
 
+###
+### --- LOAD DATA ---
+###
+
 # Load the GeoJSON data
 script_dir = os.path.dirname(os.path.abspath(__file__))
 geojson_path = os.path.abspath(os.path.join(script_dir, "../data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.geojson"))
@@ -33,27 +37,37 @@ df = pd.read_csv(csv_path)
 available_modes = df["Main mode of commuting (21)"].unique()
 dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 
-# Create the Dash app
+# Initialize the Dash app
 app = dash.Dash(__name__)
-
 server = app.server
 
+###
+### --- COMPONENTS ---
+###
+title = html.H3("Average Commute Time by Census Division")
+
+mode_dropdown = dcc.Dropdown(
+    id="mode-dropdown",
+    options=dropdown_options,
+    multi=True,
+    placeholder="Select commuting modes...",
+    searchable=True
+)
+
+choropleth_map = dcc.Graph(id="choropleth-map")
+
+###
+### --- LAYOUT ---
+###
 app.layout = html.Div([
-    html.H3("Average Commute Time by Census Division"),
-
-    # Dropdown with checkboxes for selecting commuting modes
-    dcc.Dropdown(
-        id="mode-dropdown",
-        options=dropdown_options,
-        multi=True,
-        placeholder="Select commuting modes...",
-        searchable=True
-    ),
-
-    # Choropleth map
-    dcc.Graph(id="choropleth-map")
+    title,
+    mode_dropdown,
+    choropleth_map
 ])
 
+###
+### --- CALLBACK ---
+###
 @app.callback(
     Output("choropleth-map", "figure"),
     Input("mode-dropdown", "value")
@@ -97,6 +111,8 @@ def update_map(selected_modes):
 
     return fig
 
-# Run the app
+###
+### --- RUN THE APP ---
+###
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
