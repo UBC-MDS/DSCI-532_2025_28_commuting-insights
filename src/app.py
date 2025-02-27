@@ -9,6 +9,8 @@ import json
 from dash import dcc, html, Input, Output
 import os
 
+# Enable VegaFusion to handle large datasets in Altair
+alt.data_transformers.enable("vegafusion")
 
 # Load the GeoJSON data
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -40,6 +42,11 @@ dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 # Extract unique Census Divisions for the new dropdown
 available_cdnames = df["GEO"].unique()
 dropdown_cd_options = [{"label": cd, "value": cd} for cd in available_cdnames]
+
+# Rename commute time column for easier reference
+df = df.rename(
+    columns={"Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime"}
+)
 
 # Create the Dash app
 app = dash.Dash(__name__)
@@ -78,25 +85,16 @@ app.layout = dbc.Container([
     [Output("choropleth-map", "figure"), Output("altair-violin-plot", "spec")],
     [Input("cd-dropdown", "value"), Input("mode-dropdown", "value")]
 )
-def update_charts(selected_modes):
-    # If no mode is selected, show all modes
-    if not selected_modes or len(selected_modes) == 0:
-        filtered_df = df
-    else:
-        filtered_df = df[df["Main mode of commuting (21)"].isin(selected_modes)]
+def update_charts(selected_cd, selected_modes):
+    # ---- Choropleth Map (unchanged) ----
+    filtered_df = df.copy()
+    if selected_cd:
+        filtered_df = filtered_df[filtered_df["GEO"] == selected_cd]
+    if selected_modes and len(selected_modes) > 0:
+        filtered_df = filtered_df[filtered_df["Main mode of commuting (21)"].isin(selected_modes)]
+    filtered_df = filtered_df[filtered_df["Time arriving at work (16)"] == "Total - Time arriving at work"]
 
-    # Ensure only relevant data is shown
-    filtered_df = filtered_df[
-        (filtered_df["Time arriving at work (16)"] == "Total - Time arriving at work")
-    ]
-
-    # Rename column for easier use
-    filtered_df = filtered_df.rename(
-        columns={"Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime"}
-    )
-
-    # Choropleth Map
-    fig_map = px.choropleth_mapbox(
+    fig_map = px.choropleth_map(
         filtered_df,
         geojson=geojson_data,
         locations="DGUID",
@@ -105,34 +103,61 @@ def update_charts(selected_modes):
         color_continuous_scale="OrRd",
         hover_name="GEO",
         hover_data={"DGUID": False, "AverageCommuteTime": True},
-        mapbox_style="open-street-map",
+        map_style="open-street-map",
         center={"lat": 56, "lon": -106},
         zoom=3,
         opacity=0.7,
     )
-
-    # Adjust map appearance
     fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
     fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-    # Altair Violin Plot
-    violin_chart = alt.Chart(filtered_df).transform_density(
+    # ---- Altair Violin Plot with Dot per Mode ----
+    # Base data: always use all rows where Time arriving at work is "Total - Time arriving at work"
+    base_data = df[df["Time arriving at work (16)"] == "Total - Time arriving at work"]
+
+    # If no commuting mode is selected, default to all available modes.
+    if not selected_modes or len(selected_modes) == 0:
+        selected_modes = list(available_modes)
+    base_data_filtered = base_data[base_data["Main mode of commuting (21)"].isin(selected_modes)]
+
+    # Create a base chart with the filtered data.
+    base = alt.Chart(base_data_filtered)
+
+    # Violin plot: compute density per travel mode.
+    violin = base.transform_density(
         density="AverageCommuteTime",
         groupby=["Main mode of commuting (21)"],
         as_=["AverageCommuteTime", "density"]
     ).mark_area(orient="horizontal").encode(
         y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
         x=alt.X("density:Q", stack="center", title=None, axis=None),
-        # color="Main mode of commuting (21):N",
-        column=alt.Column("Main mode of commuting (21):N", title="Mode of Commute")
     ).properties(
-        title="Distribution of Average Commute Time by Mode",
-        width=100,  # Adjust width to fit multiple violins
+        width=150,
         height=400
     )
 
-    return fig_map, violin_chart.to_dict()
+    # Dot layer: if a Census Division is selected, filter for it.
+    if selected_cd:
+        dot = base.transform_filter(alt.datum.GEO == selected_cd).mark_point(
+            filled=True, size=100, color="red"
+        ).encode(
+            y=alt.Y("AverageCommuteTime:Q"),
+            x=alt.value(0)  # Position at the center of the density (x=0)
+        )
+    else:
+        dot = alt.Chart(base_data_filtered).mark_point().encode()  # empty chart
+
+    # Layer the violin and dot
+    layered = alt.layer(violin, dot)
+
+    # Facet the layered chart by commuting mode.
+    final_chart = layered.facet(
+        column=alt.Column("Main mode of commuting (21):N", title="Mode of Commute")
+    ).resolve_scale(x="independent")
+
+    return fig_map, final_chart.to_dict(format="vega")
+
 
 # Run the app
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
