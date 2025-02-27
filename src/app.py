@@ -7,9 +7,15 @@ import geopandas as gpd
 import plotly.express as px
 import json
 from dash import dcc, html, Input, Output
+import os
 
-# Load and process the GeoJSON data
-gdf = gpd.read_file("../data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.geojson")
+
+# Load the GeoJSON data
+script_dir = os.path.dirname(os.path.abspath(__file__))
+geojson_path = os.path.abspath(os.path.join(script_dir, "../data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.geojson"))
+gdf = gpd.read_file(geojson_path)
+
+# Subset to only the columns we need
 gdf = gdf[["DGUID", "CDUID", "CDNAME", "geometry"]]
 
 # Fix the projection: EPSG:3347 → EPSG:4326 (lat/lon)
@@ -24,7 +30,8 @@ for feature in geojson_data["features"]:
     feature["id"] = feature["properties"]["CDUID"]
 
 # Load and filter the commuting data
-df = pd.read_csv("../data/raw/commuting_data/commuting_data_census_divisions.csv")
+csv_path = os.path.abspath(os.path.join(script_dir, "../data/raw/commuting_data/commuting_data_census_divisions.csv"))
+df = pd.read_csv(csv_path)
 
 # Extract unique commuting modes for dropdown options
 available_modes = df["Main mode of commuting (21)"].unique()
