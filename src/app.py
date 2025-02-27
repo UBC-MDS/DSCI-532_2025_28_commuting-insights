@@ -142,7 +142,7 @@ def update_charts(selected_cd, selected_modes):
             filled=True, size=100, color="red"
         ).encode(
             y=alt.Y("AverageCommuteTime:Q"),
-            x=alt.value(0)  # Position at the center of the density (x=0)
+            x=alt.value(75)  # Position at the center of the density (x=0)
         )
     else:
         dot = alt.Chart(base_data_filtered).mark_point().encode()  # empty chart
