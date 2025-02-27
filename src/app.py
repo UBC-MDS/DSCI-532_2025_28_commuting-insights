@@ -1,5 +1,6 @@
 import dash
 from dash import dcc, html, Input, Output
+import dash_bootstrap_components as dbc
 import geopandas as gpd
 import pandas as pd
 import plotly.express as px
@@ -38,32 +39,55 @@ available_modes = df["Main mode of commuting (21)"].unique()
 dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 
 # Initialize the Dash app
-app = dash.Dash(__name__)
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.CERULEAN]
+)
 server = app.server
 
 ###
 ### --- COMPONENTS ---
 ###
-title = html.H3("Average Commute Time by Census Division")
+title = html.H1("Commuting Insights")
 
-mode_dropdown = dcc.Dropdown(
-    id="mode-dropdown",
-    options=dropdown_options,
-    multi=True,
-    placeholder="Select commuting modes...",
-    searchable=True
-)
+map_title = html.H3("Average Commute Time by Census Division")
+
+control_widgets = [
+    html.Label("Select commuting modes:"),
+    dcc.Dropdown(
+        id="mode-dropdown",
+        options=dropdown_options,
+        multi=True,
+        placeholder="Select commuting modes...",
+        searchable=True
+    )
+]
 
 choropleth_map = dcc.Graph(id="choropleth-map")
+violin_plot = dcc.Graph(id="violin-plot")
+second_visualization = dcc.Graph(id="second-visualization")
 
 ###
 ### --- LAYOUT ---
 ###
-app.layout = html.Div([
-    title,
-    mode_dropdown,
-    choropleth_map
-])
+app.layout = dbc.Container([
+    dbc.Row(dbc.Col(title)),
+    
+    dbc.Row([
+        # Control Widgets Column
+        dbc.Col(dbc.Row(control_widgets), md=2),
+
+        # First Visualization Column (Choropleth + Violin)
+        dbc.Col([
+            dbc.Row(dbc.Col(map_title)),
+            dbc.Row(dbc.Col(choropleth_map)),
+            dbc.Row(dbc.Col(violin_plot))
+        ], md=7),
+
+        # Second Visualization Column
+        dbc.Col(second_visualization, md=3)
+    ])
+], fluid=True)
 
 ###
 ### --- CALLBACK ---
@@ -115,4 +139,4 @@ def update_map(selected_modes):
 ### --- RUN THE APP ---
 ###
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
