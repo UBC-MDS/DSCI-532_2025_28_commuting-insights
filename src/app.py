@@ -1,9 +1,12 @@
 import dash
-from dash import dcc, html, Input, Output
-import geopandas as gpd
+import dash_bootstrap_components as dbc
+import dash_vega_components as dvc
+import altair as alt
 import pandas as pd
+import geopandas as gpd
 import plotly.express as px
 import json
+from dash import dcc, html, Input, Output
 
 # Load and process the GeoJSON data
 gdf = gpd.read_file("../data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.geojson")
@@ -32,10 +35,10 @@ app = dash.Dash(__name__)
 
 server = app.server
 
-app.layout = html.Div([
+app.layout = dbc.Container([
     html.H3("Average Commute Time by Census Division"),
 
-    # Dropdown with checkboxes for selecting commuting modes
+    # Dropdown for selecting commute modes
     dcc.Dropdown(
         id="mode-dropdown",
         options=dropdown_options,
@@ -44,15 +47,18 @@ app.layout = html.Div([
         searchable=True
     ),
 
-    # Choropleth map
-    dcc.Graph(id="choropleth-map")
+    # Choropleth Map
+    dcc.Graph(id="choropleth-map"),
+
+    # Altair Vega Chart
+    dvc.Vega(id="altair-violin-plot")
 ])
 
 @app.callback(
-    Output("choropleth-map", "figure"),
+    [Output("choropleth-map", "figure"), Output("altair-violin-plot", "spec")],
     Input("mode-dropdown", "value")
 )
-def update_map(selected_modes):
+def update_charts(selected_modes):
     # If no mode is selected, show all modes
     if not selected_modes or len(selected_modes) == 0:
         filtered_df = df
@@ -69,8 +75,8 @@ def update_map(selected_modes):
         columns={"Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime"}
     )
 
-    # Create updated choropleth map
-    fig = px.choropleth_map(
+    # Choropleth Map
+    fig_map = px.choropleth_mapbox(
         filtered_df,
         geojson=geojson_data,
         locations="DGUID",
@@ -79,18 +85,34 @@ def update_map(selected_modes):
         color_continuous_scale="OrRd",
         hover_name="GEO",
         hover_data={"DGUID": False, "AverageCommuteTime": True},
-        map_style="open-street-map",
+        mapbox_style="open-street-map",
         center={"lat": 56, "lon": -106},
         zoom=3,
         opacity=0.7,
     )
 
     # Adjust map appearance
-    fig.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
+    fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
 
-    return fig
+    # Altair Violin Plot
+    violin_chart = alt.Chart(filtered_df).transform_density(
+        density="AverageCommuteTime",
+        groupby=["Main mode of commuting (21)"],
+        as_=["AverageCommuteTime", "density"]
+    ).mark_area(orient="horizontal").encode(
+        y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
+        x=alt.X("density:Q", stack="center", title=None, axis=None),
+        # color="Main mode of commuting (21):N",
+        column=alt.Column("Main mode of commuting (21):N", title="Mode of Commute")
+    ).properties(
+        title="Distribution of Average Commute Time by Mode",
+        width=100,  # Adjust width to fit multiple violins
+        height=400
+    )
+
+    return fig_map, violin_chart.to_dict()
 
 # Run the app
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
