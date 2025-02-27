@@ -9,9 +9,7 @@ import plotly.express as px
 import json
 import os
 
-###
 ### --- LOAD DATA ---
-###
 
 # Load the GeoJSON data
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -36,9 +34,18 @@ for feature in geojson_data["features"]:
 csv_path = os.path.abspath(os.path.join(script_dir, "../data/raw/commuting_data/commuting_data_census_divisions.csv"))
 df = pd.read_csv(csv_path)
 
-# Extract unique commuting modes for dropdown options
-available_modes = df["Main mode of commuting (21)"].unique()
-dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
+# Define the selectable commuting modes (only these will be available)
+selectable_modes = [
+    "Total - Main mode of commuting",
+    "Car, truck or van",
+    "Public transit",
+    "Walked",
+    "Bicycle",
+    "Motorcycle, scooter or moped",
+    "Other method"
+]
+available_modes = selectable_modes  # Fixed list
+dropdown_options = [{"label": mode, "value": mode} for mode in selectable_modes]
 
 # Extract unique Census Divisions for the new dropdown
 available_cdnames = df["GEO"].unique()
@@ -49,9 +56,7 @@ df = df.rename(
     columns={"Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime"}
 )
 
-###
 ### --- INITIALIZATION ---
-###
 
 # Enable VegaFusion to handle large datasets in Altair
 alt.data_transformers.enable("vegafusion")
@@ -63,16 +68,12 @@ app = dash.Dash(
 )
 server = app.server
 
-###
 ### --- COMPONENTS ---
-###
 
-# Headers and text
 title = html.H1("Commuting Insights")
 map_title = html.H5("Average Commute Time by Census Division")
 violin_title = html.H5("Average Commute Time by Mode")
 
-# Control widgets
 control_widgets = [
     dbc.Label("Census Division"),
     dcc.Dropdown(
@@ -83,8 +84,8 @@ control_widgets = [
         searchable=True
     ),
     html.Br(),
-    dbc.Label('Commuting Mode'),
-        dcc.Dropdown(
+    dbc.Label("Commuting Mode"),
+    dcc.Dropdown(
         id="mode-dropdown",
         options=dropdown_options,
         multi=True,
@@ -93,24 +94,15 @@ control_widgets = [
     )
 ]
 
-# Charts
 choropleth_map = dcc.Graph(id="choropleth-map")
 violin_plot = dvc.Vega(id="altair-violin-plot")
 
-###
 ### --- LAYOUT ---
-###
 
 app.layout = dbc.Container([
-    # Top row with app title only
     dbc.Row(dbc.Col(title)),
-    
-    # Row containing the rest of the app
     dbc.Row([
-        # Control Widgets Column
         dbc.Col(control_widgets, md=2),
-
-        # First Visualization Column (Choropleth + Violin)
         dbc.Col([
             dbc.Row(dbc.Col(map_title)),
             dbc.Row(dbc.Col(choropleth_map)),
@@ -122,16 +114,14 @@ app.layout = dbc.Container([
     ])
 ], fluid=True)
 
-###
 ### --- CALLBACKS ---
-###
 
 @app.callback(
     [Output("choropleth-map", "figure"), Output("altair-violin-plot", "spec")],
     [Input("cd-dropdown", "value"), Input("mode-dropdown", "value")]
 )
 def update_charts(selected_cd, selected_modes):
-    # ---- Choropleth Map (unchanged) ----
+    # ---- Choropleth Map ----
     filtered_df = df.copy()
     if selected_cd:
         filtered_df = filtered_df[filtered_df["GEO"] == selected_cd]
@@ -157,15 +147,12 @@ def update_charts(selected_cd, selected_modes):
     fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 30})
 
     # ---- Altair Violin Plot with Dot per Mode ----
-    # Base data: always use all rows where Time arriving at work is "Total - Time arriving at work"
     base_data = df[df["Time arriving at work (16)"] == "Total - Time arriving at work"]
 
     # If no commuting mode is selected, default to all available modes.
     if not selected_modes or len(selected_modes) == 0:
         selected_modes = list(available_modes)
     base_data_filtered = base_data[base_data["Main mode of commuting (21)"].isin(selected_modes)]
-
-    # Create a base chart with the filtered data.
     base = alt.Chart(base_data_filtered)
 
     # Violin plot: compute density per travel mode.
@@ -187,25 +174,19 @@ def update_charts(selected_cd, selected_modes):
             filled=True, size=100, color="red"
         ).encode(
             y=alt.Y("AverageCommuteTime:Q"),
-            x=alt.value(0)  # Position at the center of the density (x=0)
+            x=alt.value(75)  # Center of the width (x=75)
         )
     else:
-        dot = alt.Chart(base_data_filtered).mark_point().encode()  # empty chart
+        dot = alt.Chart(base_data_filtered).mark_point().encode()
 
-    # Layer the violin and dot
-    layered = alt.layer(violin, dot)
-
-    # Facet the layered chart by commuting mode.
-    final_chart = layered.facet(
+    # Layer the violin and dot, and facet by commuting mode.
+    final_chart = alt.layer(violin, dot).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Mode of Commute")
     ).resolve_scale(x="independent")
 
     return fig_map, final_chart.to_dict(format="vega")
 
-
-###
 ### --- RUN THE APP ---
-###
 
 if __name__ == "__main__":
-    app.server.run(port=8000, host="127.0.0.1", debug=False)
+    app.server.run(port=8000, host="127.0.0.1", debug=True)
