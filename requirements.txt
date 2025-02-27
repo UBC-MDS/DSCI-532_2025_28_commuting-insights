@@ -6,3 +6,4 @@ dash-vega-components==0.11.*
 geopandas==1.0.*
 pandas==2.2.*
 plotly==6.0.*
+vegafusion==2.0.*
