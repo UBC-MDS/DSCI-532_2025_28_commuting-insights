@@ -1,16 +1,17 @@
 import dash
 import dash_bootstrap_components as dbc
 import dash_vega_components as dvc
+from dash import dcc, html, Input, Output
 import altair as alt
 import pandas as pd
 import geopandas as gpd
 import plotly.express as px
 import json
-from dash import dcc, html, Input, Output
 import os
 
-# Enable VegaFusion to handle large datasets in Altair
-alt.data_transformers.enable("vegafusion")
+###
+### --- LOAD DATA ---
+###
 
 # Load the GeoJSON data
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,38 +49,82 @@ df = df.rename(
     columns={"Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime"}
 )
 
-# Create the Dash app
-app = dash.Dash(__name__)
+###
+### --- INITIALIZATION ---
+###
 
+# Enable VegaFusion to handle large datasets in Altair
+alt.data_transformers.enable("vegafusion")
+
+# Create the Dash app
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.CERULEAN]
+)
 server = app.server
 
-app.layout = dbc.Container([
-    html.H3("Average Commute Time by Census Division"),
+###
+### --- COMPONENTS ---
+###
 
-    # Dropdown for selecting Census Division
+# Headers and text
+title = html.H1("Commuting Insights")
+map_title = html.H5("Average Commute Time by Census Division")
+violin_title = html.H5("Average Commute Time by Mode")
+
+# Control widgets
+control_widgets = [
+    dbc.Label("Census Division"),
     dcc.Dropdown(
         id="cd-dropdown",
         options=dropdown_cd_options,
         multi=False,  # Single selection
-        placeholder="Select a Census Division...",
+        placeholder="Select a Division...",
         searchable=True
     ),
-
-    # Dropdown for selecting commute modes
-    dcc.Dropdown(
+    html.Br(),
+    dbc.Label('Commuting Mode'),
+        dcc.Dropdown(
         id="mode-dropdown",
         options=dropdown_options,
         multi=True,
-        placeholder="Select commuting modes...",
+        placeholder="Select one or more modes...",
         searchable=True
-    ),
+    )
+]
 
-    # Choropleth Map
-    dcc.Graph(id="choropleth-map"),
+# Charts
+choropleth_map = dcc.Graph(id="choropleth-map")
+violin_plot = dvc.Vega(id="altair-violin-plot")
 
-    # Altair Vega Chart
-    dvc.Vega(id="altair-violin-plot")
-])
+###
+### --- LAYOUT ---
+###
+
+app.layout = dbc.Container([
+    # Top row with app title only
+    dbc.Row(dbc.Col(title)),
+    
+    # Row containing the rest of the app
+    dbc.Row([
+        # Control Widgets Column
+        dbc.Col(control_widgets, md=2),
+
+        # First Visualization Column (Choropleth + Violin)
+        dbc.Col([
+            dbc.Row(dbc.Col(map_title)),
+            dbc.Row(dbc.Col(choropleth_map)),
+            html.Br(),
+            html.Br(),
+            dbc.Row(dbc.Col(violin_title)),
+            dbc.Row(dbc.Col(violin_plot))
+        ], md=10),
+    ])
+], fluid=True)
+
+###
+### --- CALLBACKS ---
+###
 
 @app.callback(
     [Output("choropleth-map", "figure"), Output("altair-violin-plot", "spec")],
@@ -109,7 +154,7 @@ def update_charts(selected_cd, selected_modes):
         opacity=0.7,
     )
     fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
-    fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 30})
 
     # ---- Altair Violin Plot with Dot per Mode ----
     # Base data: always use all rows where Time arriving at work is "Total - Time arriving at work"
@@ -158,6 +203,9 @@ def update_charts(selected_cd, selected_modes):
     return fig_map, final_chart.to_dict(format="vega")
 
 
-# Run the app
+###
+### --- RUN THE APP ---
+###
+
 if __name__ == "__main__":
     app.server.run(port=8000, host="127.0.0.1", debug=False)
