@@ -49,6 +49,15 @@ server = app.server
 app.layout = dbc.Container([
     html.H3("Average Commute Time by Census Division"),
 
+    # Dropdown for selecting Census Division
+    dcc.Dropdown(
+        id="cd-dropdown",
+        options=dropdown_cd_options,
+        multi=False,  # Single selection
+        placeholder="Select a Census Division...",
+        searchable=True
+    ),
+
     # Dropdown for selecting commute modes
     dcc.Dropdown(
         id="mode-dropdown",
@@ -67,7 +76,7 @@ app.layout = dbc.Container([
 
 @app.callback(
     [Output("choropleth-map", "figure"), Output("altair-violin-plot", "spec")],
-    Input("mode-dropdown", "value")
+    [Input("cd-dropdown", "value"), Input("mode-dropdown", "value")]
 )
 def update_charts(selected_modes):
     # If no mode is selected, show all modes
