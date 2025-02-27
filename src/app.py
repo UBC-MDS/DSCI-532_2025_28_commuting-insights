@@ -30,6 +30,10 @@ df = pd.read_csv("../data/raw/commuting_data/commuting_data_census_divisions.csv
 available_modes = df["Main mode of commuting (21)"].unique()
 dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 
+# Extract unique Census Divisions for the new dropdown
+available_cdnames = df["GEO"].unique()
+dropdown_cd_options = [{"label": cd, "value": cd} for cd in available_cdnames]
+
 # Create the Dash app
 app = dash.Dash(__name__)
 
@@ -115,4 +119,4 @@ def update_charts(selected_modes):
 
 # Run the app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
