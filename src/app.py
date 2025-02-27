@@ -33,6 +33,22 @@ for feature in geojson_data["features"]:
 # Load and filter the commuting data
 csv_path = os.path.abspath(os.path.join(script_dir, "../data/raw/commuting_data/commuting_data_census_divisions.csv"))
 df = pd.read_csv(csv_path)
+# Keep only selected columns:
+df = df[[
+    "GEO", 
+    "DGUID", 
+    "Time arriving at work (16)", 
+    "Main mode of commuting (21)", 
+    "Commuting duration (7):Total - Commuting duration[1]", 
+    "Commuting duration (7):Average commuting duration (in minutes)[7]"
+]]
+# Rename columns for convenience.
+df = df.rename(
+    columns={
+        "Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime",
+        "Commuting duration (7):Total - Commuting duration[1]": "TotalDuration"
+    }
+)
 
 # Define the selectable commuting modes (only these will be available)
 selectable_modes = [
@@ -50,14 +66,6 @@ dropdown_options = [{"label": mode, "value": mode} for mode in selectable_modes]
 # Extract unique Census Divisions for the new dropdown
 available_cdnames = df["GEO"].unique()
 dropdown_cd_options = [{"label": cd, "value": cd} for cd in available_cdnames]
-
-# Rename commute time column for easier reference
-df = df.rename(
-    columns={
-        "Commuting duration (7):Average commuting duration (in minutes)[7]": "AverageCommuteTime",
-        "Commuting duration (7):Total - Commuting duration[1]": "TotalDuration"
-        }
-)
 
 # Define the time bins present in the dataset (excluding the "Total - Time arriving at work" summary)
 time_bins = [
@@ -82,23 +90,23 @@ time_bins = [
 time_bin_order = {t: i for i, t in enumerate(time_bins)}
 
 # Create a mapping from time bin to a representative label.
-# Note: We update the last bin's label to "5:00am" since its exclusive end is 5:00am.
+# For the last bin, we set its representative label as "5am" because its exclusive end is 5:00am.
 time_bin_labels = {
-    "Between 5 a.m. and 5:29 a.m.": "5:00am",
-    "Between 5:30 a.m. and 5:59 a.m.": "5:30am",
-    "Between 6 a.m. and 6:29 a.m.": "6:00am",
-    "Between 6:30 a.m. and 6:59 a.m.": "6:30am",
-    "Between 7 a.m. and 7:29 a.m.": "7:00am",
-    "Between 7:30 a.m. and 7:59 a.m.": "7:30am",
-    "Between 8 a.m. and 8:29 a.m.": "8:00am",
-    "Between 8:30 a.m. and 8:59 a.m.": "8:30am",
-    "Between 9 a.m. and 9:59 a.m.": "9:00am",
-    "Between 10 a.m. and 10:59 a.m.": "10:00am",
-    "Between 11 a.m. and 11:59 a.m.": "11:00am",
-    "Between 12 p.m. and 3:59 p.m.": "12:00pm",
-    "Between 4 p.m. and 7:59 p.m.": "4:00pm",
-    "Between 8 p.m. and 11:59 p.m.": "8:00pm",
-    "Between 12 a.m. and 4:59 a.m.": "5:00am"
+    "Between 5 a.m. and 5:29 a.m.": "5",
+    "Between 5:30 a.m. and 5:59 a.m.": "5:30",
+    "Between 6 a.m. and 6:29 a.m.": "6",
+    "Between 6:30 a.m. and 6:59 a.m.": "6:30",
+    "Between 7 a.m. and 7:29 a.m.": "7",
+    "Between 7:30 a.m. and 7:59 a.m.": "7:30",
+    "Between 8 a.m. and 8:29 a.m.": "8",
+    "Between 8:30 a.m. and 8:59 a.m.": "8:30",
+    "Between 9 a.m. and 9:59 a.m.": "9",
+    "Between 10 a.m. and 10:59 a.m.": "10",
+    "Between 11 a.m. and 11:59 a.m.": "11",
+    "Between 12 p.m. and 3:59 p.m.": "12pm",
+    "Between 4 p.m. and 7:59 p.m.": "4",
+    "Between 8 p.m. and 11:59 p.m.": "8",
+    "Between 12 a.m. and 4:59 a.m.": "5am"
 }
 
 # Create slider marks using the representative labels.
@@ -188,7 +196,7 @@ def update_charts(selected_cd, selected_modes, time_range):
     if selected_modes and len(selected_modes) > 0:
         filtered_df = filtered_df[filtered_df["Main mode of commuting (21)"].isin(selected_modes)]
     filtered_df = filtered_df[filtered_df["Time arriving at work (16)"].isin(time_bin_order.keys())]
-    # Use left-inclusive, right-exclusive filtering.
+    # Left-inclusive, right-exclusive filtering.
     filtered_df = filtered_df[
         filtered_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t]).between(time_range[0], time_range[1], inclusive="left")
     ]
@@ -211,7 +219,6 @@ def update_charts(selected_cd, selected_modes, time_range):
     fig_map.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 30})
     
     # ---- Altair Violin Plot with Weighted Red Rule ----
-    # Filter base data by our defined time bins.
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
     base_data["time_order"] = base_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
     base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
@@ -225,12 +232,12 @@ def update_charts(selected_cd, selected_modes, time_range):
         # Ensure the weight column is numeric.
         base_data_filtered["TotalDuration"] = pd.to_numeric(base_data_filtered["TotalDuration"], errors="coerce")
         cd_data = base_data_filtered[base_data_filtered["GEO"] == selected_cd].copy()
-        # Compute weighted average per mode: sum(AverageCommuteTime * TotalDuration) / sum(TotalDuration)
+        # Compute weighted average per mode.
         agg_df = cd_data.groupby("Main mode of commuting (21)").apply(
             lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
             if g["TotalDuration"].sum() != 0 else None
         ).reset_index(name="meanCommute")
-        # Merge the aggregated weighted means back into the filtered data.
+        # Merge the aggregated values back into the filtered data.
         merged_data = pd.merge(base_data_filtered, agg_df, on="Main mode of commuting (21)", how="left")
     else:
         merged_data = base_data_filtered.copy()
@@ -246,7 +253,7 @@ def update_charts(selected_cd, selected_modes, time_range):
     ).mark_area(orient="horizontal").encode(
         y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
         x=alt.X("density:Q", stack="center", title=None, axis=None),
-        # color=alt.Color("Main mode of commuting (21):N")
+        color=alt.Color("Main mode of commuting (21):N")
     ).properties(
         width=150,
         height=400
@@ -258,15 +265,11 @@ def update_charts(selected_cd, selected_modes, time_range):
         tooltip=alt.Tooltip("meanCommute:Q", format=".1f", title="Weighted Mean Commute Time")
     )
     
-    # Layer the violin and red rule; facet by commuting mode.
     final_chart = alt.layer(violin, rule).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Mode of Commute")
     ).resolve_scale(x="independent")
     
     return fig_map, final_chart.to_dict(format="vega")
-
-
-
 
 ### --- RUN THE APP ---
 
