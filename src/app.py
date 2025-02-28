@@ -162,7 +162,9 @@ time_slider = dcc.RangeSlider(
     max=len(time_bins),
     value=[0, len(time_bins)],
     marks=slider_marks,
-    step=1
+    step=1,
+    allowCross=False,
+    pushable=1
 )
 map_title = html.H5("Average Commute Time by Census Division")
 choropleth_map = dcc.Graph(id="choropleth-map")
