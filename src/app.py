@@ -353,6 +353,7 @@ def update_charts(selected_cd, selected_modes, time_range):
             ]
         )
         .properties(width=370, height=370)
+        .interactive()
     )
     
     return fig_map, final_chart.to_dict(format="vega"), scatter.to_dict(format="vega")
