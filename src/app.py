@@ -128,76 +128,88 @@ server = app.server
 
 title = html.H1("Commuting Insights")
 
+cd_dropdown_label = dbc.Label("Census Division")
+cd_dropdown = dcc.Dropdown(
+    id="cd-dropdown",
+    options=dropdown_cd_options,
+    multi=False,
+    placeholder="Select a Division...",
+    searchable=True
+)
+
+mode_dropdown_label = dbc.Label("Commuting Mode")
+mode_dropdown = dcc.Dropdown(
+    id="mode-dropdown",
+    options=dropdown_options,
+    multi=True,
+    placeholder="Select one or more modes...",
+    searchable=True
+)
+
+time_slider_label = dbc.Label("Arrival Time")
+time_slider = dcc.RangeSlider(
+    id="time-slider",
+    min=0,
+    max=len(time_bins) - 1,
+    value=[0, len(time_bins) - 1],
+    marks=time_marks,
+    step=1
+)
+
 map_title = html.H5("Average Commute Time by Census Division")
-
-violin_title = html.H5("Commute Time by Mode")
-violin_label_shape = dbc.Label("• For each mode, blue violin shapes show commute time distributions for all of Canada, all times of day.")
-violin_label_line = dbc.Label("• Horizontal red lines show the mode's average commute time for the currently selected Census Division and Arrival Time.")
-
+choropleth_map = dcc.Graph(id="choropleth-map")
 
 scatter_title = html.H5("Average Commute Time by Number of Observations")
 scatter_label = dbc.Label("Each point is a unique combination of Census Division and Mode.")
-
-control_widgets = [
-    dbc.Label("Census Division"),
-    dcc.Dropdown(
-        id="cd-dropdown",
-        options=dropdown_cd_options,
-        multi=False,
-        placeholder="Select a Division...",
-        searchable=True
-    ),
-    html.Br(),
-    dbc.Label("Commuting Mode"),
-    dcc.Dropdown(
-        id="mode-dropdown",
-        options=dropdown_options,
-        multi=True,
-        placeholder="Select one or more modes...",
-        searchable=True
-    ),
-    html.Br(),
-    dbc.Label("Arrival Time"),
-    dcc.RangeSlider(
-        id="time-slider",
-        min=0,
-        max=len(time_bins) - 1,
-        value=[0, len(time_bins) - 1],
-        marks=time_marks,
-        step=1
-    )
-]
-
-choropleth_map = dcc.Graph(id="choropleth-map")
-violin_plot = dvc.Vega(id="altair-violin-plot")
 scatter_plot = dvc.Vega(id="altair-scatter-plot")
+
+violin_title = html.H5("Commute Times by Mode")
+violin_label_shape = dbc.Label("• For each mode, blue violin shapes show commute time distributions for all of Canada, all times of day.")
+violin_label_line = dbc.Label("• Horizontal red lines show the mode's average commute time for the currently selected Census Division and Arrival Time.")
+violin_plot = dvc.Vega(id="altair-violin-plot")
 
 ### --- LAYOUT ---
 
 app.layout = dbc.Container([
+    # Title row
+    dbc.Row(dbc.Col(title, width=12)),
+    html.Br(),
+
+    # Control widgets row (each widget in md=4)
     dbc.Row([
-        dbc.Col([
-            dbc.Row(dbc.Col(title)),
-            html.Br()
-        ]),
+        # Census Division Dropdown
+        dbc.Col([cd_dropdown_label, cd_dropdown], md=4),
+        # Mode Select Dropdown
+        dbc.Col([mode_dropdown_label, mode_dropdown], md=4),
+        # Arrival Time Slider
+        dbc.Col([time_slider_label, time_slider], md=4)
     ]),
+    html.Br(),
+
+    # Row containing map (md=6) and scatter plot (md=6)
     dbc.Row([
-        dbc.Col(control_widgets, md=2),
         dbc.Col([
             dbc.Row(dbc.Col(map_title)),
-            dbc.Row(dbc.Col(choropleth_map)),
-            html.Br(),
-            html.Br(),
+            dbc.Row(dbc.Col(choropleth_map))
+        ], md=8),
+
+        dbc.Col([
+            dbc.Row(dbc.Col(scatter_title)),
+            dbc.Row(dbc.Col(scatter_label)),
+            dbc.Row(dbc.Col(scatter_plot))
+        ], md=4)
+    ]),
+    html.Br(),
+    html.Br(),
+
+    # Violin plot row
+    dbc.Row([
+        dbc.Col([
             dbc.Row(dbc.Col(violin_title)),
             dbc.Row(dbc.Col(violin_label_shape)),
             dbc.Row(dbc.Col(violin_label_line)),
             dbc.Row(dbc.Col(violin_plot))
-        ], md=6),
-        dbc.Col([
-            dbc.Row(dbc.Col(scatter_title)),
-            dbc.Row(dbc.Col(scatter_label)),
-            dbc.Row(dbc.Col(scatter_plot)),
-        ], md=4),
+        ], width=12)  # Ensuring violin plot spans the full width
     ])
 ], fluid=True)
 
