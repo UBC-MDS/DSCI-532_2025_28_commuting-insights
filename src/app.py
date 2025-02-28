@@ -136,7 +136,7 @@ violin_label_line = dbc.Label("• Horizontal red lines show the mode's average 
 
 
 scatter_title = html.H5("Average Commute Time by Number of Observations")
-scatter_label = dbc.Label("• Each point is a Census Division x Mode combination.")
+scatter_label = dbc.Label("Each point is a unique combination of Census Division and Mode.")
 
 control_widgets = [
     dbc.Label("Census Division"),
