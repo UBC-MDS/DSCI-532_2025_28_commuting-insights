@@ -12,5 +12,7 @@ dependencies:
     - lxml = 5.3.1
     - pip = 25.0.1
     - geopandas = 1.0.1
+    - numpy==2.2
+    - scipy==1.15
     - pip:
         - dash-vega-components
