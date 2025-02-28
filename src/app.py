@@ -137,6 +137,23 @@ alt.data_transformers.enable("vegafusion")
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
 server = app.server
 
+@app.callback(
+    Output("mode-dropdown", "options"),
+    [Input("cd-dropdown", "value")]
+)
+def update_mode_options(selected_cd):
+    if not selected_cd:
+        return dropdown_options
+    # Filter for the selected CD and nonzero average commute time
+    df_cd = df[(df["GEO"] == selected_cd) & (df["AverageCommuteTime"] > 0)]
+    # Get the unique modes that appear in the CD
+    modes = df_cd["Main mode of commuting (21)"].unique()
+    # Only keep those modes that are in the allowed selectable_modes list
+    valid_modes = [m for m in modes if m in selectable_modes]
+    options = [{"label": m, "value": m} for m in valid_modes]
+    return options
+
+
 ### --- COMPONENTS ---
 title = html.H1("Commuting Insights")
 cd_dropdown_label = dbc.Label("Census Division")
@@ -225,6 +242,7 @@ app.layout = dbc.Container([
         ], width=12)
     ])
 ], fluid=True)
+
 
 ### --- CALLBACKS ---
 @app.callback(
