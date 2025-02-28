@@ -33,7 +33,7 @@ for feature in geojson_data["features"]:
     feature["id"] = feature["properties"]["CDUID"]
 
 # Load and filter the commuting data
-csv_path = os.path.abspath(os.path.join(script_dir, "../data/raw/commuting_data/commuting_data_census_divisions.csv"))
+csv_path = os.path.abspath(os.path.join(script_dir, "../data/processed/commuting_data/commuting_data_census_divisions_disambiguated.csv"))
 df = pd.read_csv(csv_path)
 # Keep only selected columns (including the count columns):
 df = df[[ 
