@@ -1,0 +1,294 @@
+PRENAME_PRANOM,CDUID_DRIDU,CDDGUID_DRIDUGD,CDNAME_DRNOM,CSDNAME_SDRNOM
+Newfoundland and Labrador,1001,2021A00031001,Division No.  1,St. John's
+Newfoundland and Labrador,1002,2021A00031002,Division No.  2,"Division No.  2, Subd. K"
+Newfoundland and Labrador,1003,2021A00031003,Division No.  3,"Division No.  3, Subd. A"
+Newfoundland and Labrador,1004,2021A00031004,Division No.  4,Gallants
+Newfoundland and Labrador,1005,2021A00031005,Division No.  5,Jackson's Arm
+Newfoundland and Labrador,1006,2021A00031006,Division No.  6,Gander
+Newfoundland and Labrador,1007,2021A00031007,Division No.  7,New-Wes-Valley
+Newfoundland and Labrador,1008,2021A00031008,Division No.  8,Fogo Island
+Newfoundland and Labrador,1009,2021A00031009,Division No.  9,"Division No.  9, Subd. D"
+Newfoundland and Labrador,1010,2021A00031010,Division No. 10,"Division No. 10, Subd. E"
+Newfoundland and Labrador,1011,2021A00031011,Division No. 11,"Division No. 11, Subd. E"
+Prince Edward Island,1101,2021A00031101,Kings,Souris
+Prince Edward Island,1102,2021A00031102,Queens,Mount Stewart
+Prince Edward Island,1103,2021A00031103,Prince,Tignish
+Nova Scotia,1201,2021A00031201,Shelburne,Shelburne
+Nova Scotia,1202,2021A00031202,Yarmouth,Yarmouth
+Nova Scotia,1203,2021A00031203,Digby,Digby
+Nova Scotia,1204,2021A00031204,Queens,Queens
+Nova Scotia,1205,2021A00031205,Annapolis,"Annapolis, Subd. C"
+Nova Scotia,1206,2021A00031206,Lunenburg,New Ross 20
+Nova Scotia,1207,2021A00031207,Kings,"Kings, Subd. B"
+Nova Scotia,1208,2021A00031208,Hants,East Hants
+Nova Scotia,1209,2021A00031209,Halifax,Halifax
+Nova Scotia,1210,2021A00031210,Colchester,"Colchester, Subd. B"
+Nova Scotia,1211,2021A00031211,Cumberland,"Cumberland, Subd. D"
+Nova Scotia,1212,2021A00031212,Pictou,"Pictou, Subd. C"
+Nova Scotia,1213,2021A00031213,Guysborough,Mulgrave
+Nova Scotia,1214,2021A00031214,Antigonish,"Antigonish, Subd. B"
+Nova Scotia,1215,2021A00031215,Inverness,"Inverness, Subd. A"
+Nova Scotia,1216,2021A00031216,Richmond,"Richmond, Subd. B"
+Nova Scotia,1217,2021A00031217,Cape Breton,Eskasoni 3
+Nova Scotia,1218,2021A00031218,Victoria,"Victoria, Subd. A"
+New Brunswick,1301,2021A00031301,Saint John,Saint John
+New Brunswick,1302,2021A00031302,Charlotte,Clarendon
+New Brunswick,1303,2021A00031303,Sunbury,Northfield
+New Brunswick,1304,2021A00031304,Queens,Chipman
+New Brunswick,1305,2021A00031305,Kings,Havelock
+New Brunswick,1306,2021A00031306,Albert,Riverview
+New Brunswick,1307,2021A00031307,Westmorland,Moncton
+New Brunswick,1308,2021A00031308,Kent,Carleton
+New Brunswick,1309,2021A00031309,Northumberland,Tabusintac 9
+New Brunswick,1310,2021A00031310,York,Stanley
+New Brunswick,1311,2021A00031311,Carleton,Kent
+New Brunswick,1312,2021A00031312,Victoria,Drummond
+New Brunswick,1313,2021A00031313,Madawaska,Saint-Jacques
+New Brunswick,1314,2021A00031314,Restigouche,Dalhousie
+New Brunswick,1315,2021A00031315,Gloucester,Tracadie
+Quebec,2401,2021A00032401,Communauté maritime des Îles-de-la-Madeleine,Grosse-Île
+Quebec,2402,2021A00032402,Le Rocher-Percé,Percé
+Quebec,2403,2021A00032403,La Côte-de-Gaspé,Cloridorme
+Quebec,2404,2021A00032404,La Haute-Gaspésie,Sainte-Madeleine-de-la-Rivière-Madeleine
+Quebec,2405,2021A00032405,Bonaventure,Rivière-Bonaventure
+Quebec,2406,2021A00032406,Avignon,Gesgapegiag
+Quebec,2407,2021A00032407,La Matapédia,Sainte-Marguerite-Marie
+Quebec,2408,2021A00032408,La Matanie,Les Méchins
+Quebec,2409,2021A00032409,La Mitis,Métis-sur-Mer
+Quebec,2410,2021A00032410,Rimouski-Neigette,Rimouski
+Quebec,2411,2021A00032411,Les Basques,Saint-Simon-de-Rimouski
+Quebec,2412,2021A00032412,Rivière-du-Loup,L'Isle-Verte
+Quebec,2413,2021A00032413,Témiscouata,Lac-des-Aigles
+Quebec,2414,2021A00032414,Kamouraska,Saint-Alexandre-de-Kamouraska
+Quebec,2415,2021A00032415,Charlevoix-Est,Baie-Sainte-Catherine
+Quebec,2416,2021A00032416,Charlevoix,Saint-Hilarion
+Quebec,2417,2021A00032417,L'Islet,Saint-Roch-des-Aulnaies
+Quebec,2418,2021A00032418,Montmagny,Saint-Antoine-de-l'Isle-aux-Grues
+Quebec,2419,2021A00032419,Bellechasse,Saint-Vallier
+Quebec,2420,2021A00032420,L'Île-d'Orléans,Saint-François-de-l'Île-d'Orléans
+Quebec,2421,2021A00032421,La Côte-de-Beaupré,Lac-Jacques-Cartier
+Quebec,2422,2021A00032422,La Jacques-Cartier,Lac-Croche
+Quebec,2423,2021A00032423,Québec,Québec
+Quebec,2425,2021A00032425,Lévis,Lévis
+Quebec,2426,2021A00032426,La Nouvelle-Beauce,Saint-Isidore
+Quebec,2427,2021A00032427,Robert-Cliche,Saint-Odilon-de-Cranbourne
+Quebec,2428,2021A00032428,Les Etchemins,Saint-Magloire
+Quebec,2429,2021A00032429,Beauce-Sartigan,Saint-Simon-les-Mines
+Quebec,2430,2021A00032430,Le Granit,Saint-Ludger
+Quebec,2431,2021A00032431,Les Appalaches,Saint-Jacques-de-Leeds
+Quebec,2432,2021A00032432,L'Érable,Lyster
+Quebec,2433,2021A00032433,Lotbinière,Saint-Antoine-de-Tilly
+Quebec,2434,2021A00032434,Portneuf,Lac-Blanc
+Quebec,2435,2021A00032435,Mékinac,Lac-Masketsi
+Quebec,2436,2021A00032436,Shawinigan,Shawinigan
+Quebec,2437,2021A00032437,Francheville,Trois-Rivières
+Quebec,2438,2021A00032438,Bécancour,Deschaillons-sur-Saint-Laurent
+Quebec,2439,2021A00032439,Arthabaska,Saint-Louis-de-Blandford
+Quebec,2440,2021A00032440,Les Sources,Saint-Adrien
+Quebec,2441,2021A00032441,Le Haut-Saint-François,Weedon
+Quebec,2442,2021A00032442,Le Val-Saint-François,Cleveland
+Quebec,2443,2021A00032443,Sherbrooke,Sherbrooke
+Quebec,2444,2021A00032444,Coaticook,Martinville
+Quebec,2445,2021A00032445,Memphrémagog,Orford
+Quebec,2446,2021A00032446,Brome-Missisquoi,Lac-Brome
+Quebec,2447,2021A00032447,La Haute-Yamaska,Roxton Pond
+Quebec,2448,2021A00032448,Acton,Saint-Nazaire-d'Acton
+Quebec,2449,2021A00032449,Drummond,Sainte-Brigitte-des-Saults
+Quebec,2450,2021A00032450,Nicolet-Yamaska,Nicolet
+Quebec,2451,2021A00032451,Maskinongé,Saint-Mathieu-du-Parc
+Quebec,2452,2021A00032452,D'Autray,Mandeville
+Quebec,2453,2021A00032453,Pierre-De Saurel,Sainte-Anne-de-Sorel
+Quebec,2454,2021A00032454,Les Maskoutains,Saint-Marcel-de-Richelieu
+Quebec,2455,2021A00032455,Rouville,Saint-Paul-d'Abbotsford
+Quebec,2456,2021A00032456,Le Haut-Richelieu,Sainte-Brigide-d'Iberville
+Quebec,2457,2021A00032457,La Vallée-du-Richelieu,Beloeil
+Quebec,2458,2021A00032458,Longueuil,Longueuil
+Quebec,2459,2021A00032459,Marguerite-D'Youville,Varennes
+Quebec,2460,2021A00032460,L'Assomption,Repentigny
+Quebec,2461,2021A00032461,Joliette,Sainte-Mélanie
+Quebec,2462,2021A00032462,Matawinie,Lac-Cabasta
+Quebec,2463,2021A00032463,Montcalm,Saint-Liguori
+Quebec,2464,2021A00032464,Les Moulins,Mascouche
+Quebec,2465,2021A00032465,Laval,Laval
+Quebec,2466,2021A00032466,Montréal,Montréal
+Quebec,2467,2021A00032467,Roussillon,La Prairie
+Quebec,2468,2021A00032468,Les Jardins-de-Napierville,Saint-Jacques-le-Mineur
+Quebec,2469,2021A00032469,Le Haut-Saint-Laurent,Howick
+Quebec,2470,2021A00032470,Beauharnois-Salaberry,Beauharnois
+Quebec,2471,2021A00032471,Vaudreuil-Soulanges,Vaudreuil-Dorion
+Quebec,2472,2021A00032472,Deux-Montagnes,Saint-Eustache
+Quebec,2473,2021A00032473,Thérèse-De Blainville,Blainville
+Quebec,2474,2021A00032474,Mirabel,Mirabel
+Quebec,2475,2021A00032475,La Rivière-du-Nord,Saint-Jérôme
+Quebec,2476,2021A00032476,Argenteuil,Mille-Isles
+Quebec,2477,2021A00032477,Les Pays-d'en-Haut,Sainte-Marguerite-du-Lac-Masson
+Quebec,2478,2021A00032478,Les Laurentides,Lac-Supérieur
+Quebec,2479,2021A00032479,Antoine-Labelle,Lac-Wagwabika
+Quebec,2480,2021A00032480,Papineau,Lac-des-Plages
+Quebec,2481,2021A00032481,Gatineau,Gatineau
+Quebec,2482,2021A00032482,Les Collines-de-l'Outaouais,Cantley
+Quebec,2483,2021A00032483,La Vallée-de-la-Gatineau,Dépôt-Échouani
+Quebec,2484,2021A00032484,Pontiac,Lac-Nilgaut
+Quebec,2485,2021A00032485,Témiscamingue,Rémigny
+Quebec,2486,2021A00032486,Rouyn-Noranda,Rouyn-Noranda
+Quebec,2487,2021A00032487,Abitibi-Ouest,Rivière-Ojima
+Quebec,2488,2021A00032488,Abitibi,Lac-Despinassy
+Quebec,2489,2021A00032489,La Vallée-de-l'Or,Senneterre
+Quebec,2490,2021A00032490,La Tuque,Obedjiwan 28
+Quebec,2491,2021A00032491,Le Domaine-du-Roy,Saint-Félicien
+Quebec,2492,2021A00032492,Maria-Chapdelaine,Rivière-Mistassini
+Quebec,2493,2021A00032493,Lac-Saint-Jean-Est,Saint-Ludger-de-Milot
+Quebec,2494,2021A00032494,Le Saguenay-et-son-Fjord,Saguenay
+Quebec,2495,2021A00032495,La Haute-Côte-Nord,Colombier
+Quebec,2496,2021A00032496,Manicouagan,Rivière-aux-Outardes
+Quebec,2497,2021A00032497,Sept-Rivières--Caniapiscau,Lac-Juillet
+Quebec,2498,2021A00032498,Minganie--Le Golfe-du-Saint-Laurent,Blanc-Sablon
+Quebec,2499,2021A00032499,Nord-du-Québec,Salluit
+Ontario,3501,2021A00033501,"Stormont, Dundas and Glengarry",North Glengarry
+Ontario,3502,2021A00033502,Prescott and Russell,Clarence-Rockland
+Ontario,3506,2021A00033506,Ottawa,Ottawa
+Ontario,3507,2021A00033507,Leeds and Grenville,North Grenville
+Ontario,3509,2021A00033509,Lanark,Mississippi Mills
+Ontario,3510,2021A00033510,Frontenac,Kingston
+Ontario,3511,2021A00033511,Lennox and Addington,Addington Highlands
+Ontario,3512,2021A00033512,Hastings,Belleville
+Ontario,3513,2021A00033513,Prince Edward,Prince Edward County
+Ontario,3514,2021A00033514,Northumberland,Trent Hills
+Ontario,3515,2021A00033515,Peterborough,Peterborough
+Ontario,3516,2021A00033516,Kawartha Lakes,Kawartha Lakes
+Ontario,3518,2021A00033518,Durham,Scugog
+Ontario,3519,2021A00033519,York,Chippewas of Georgina Island First Nation
+Ontario,3520,2021A00033520,Toronto,Toronto
+Ontario,3521,2021A00033521,Peel,Caledon
+Ontario,3522,2021A00033522,Dufferin,Mulmur
+Ontario,3523,2021A00033523,Wellington,Guelph
+Ontario,3524,2021A00033524,Halton,Halton Hills
+Ontario,3525,2021A00033525,Hamilton,Hamilton
+Ontario,3526,2021A00033526,Niagara,Niagara-on-the-Lake
+Ontario,3528,2021A00033528,Haldimand-Norfolk,Haldimand County
+Ontario,3529,2021A00033529,Brant,Brantford
+Ontario,3530,2021A00033530,Waterloo,Woolwich
+Ontario,3531,2021A00033531,Perth,North Perth
+Ontario,3532,2021A00033532,Oxford,Blandford-Blenheim
+Ontario,3534,2021A00033534,Elgin,St. Thomas
+Ontario,3536,2021A00033536,Chatham-Kent,Chatham-Kent
+Ontario,3537,2021A00033537,Essex,Windsor
+Ontario,3538,2021A00033538,Lambton,Sarnia
+Ontario,3539,2021A00033539,Middlesex,London
+Ontario,3540,2021A00033540,Huron,Howick
+Ontario,3541,2021A00033541,Bruce,Northern Bruce Peninsula
+Ontario,3542,2021A00033542,Grey,Georgian Bluffs
+Ontario,3543,2021A00033543,Simcoe,Christian Island 30
+Ontario,3544,2021A00033544,Muskoka,Lake of Bays
+Ontario,3546,2021A00033546,Haliburton,Dysart et al
+Ontario,3547,2021A00033547,Renfrew,Laurentian Hills
+Ontario,3548,2021A00033548,Nipissing,North Bay
+Ontario,3549,2021A00033549,Parry Sound,Callander
+Ontario,3551,2021A00033551,Manitoulin,Northeastern Manitoulin and the Islands
+Ontario,3552,2021A00033552,Sudbury,Mattagami 71
+Ontario,3553,2021A00033553,Greater Sudbury / Grand Sudbury,Greater Sudbury / Grand Sudbury
+Ontario,3554,2021A00033554,Timiskaming,"Timiskaming, Unorganized, East Part"
+Ontario,3556,2021A00033556,Cochrane,Fort Albany (Part) 67
+Ontario,3557,2021A00033557,Algoma,Sault Ste. Marie
+Ontario,3558,2021A00033558,Thunder Bay,Thunder Bay
+Ontario,3559,2021A00033559,Rainy River,Saug-A-Gaw-Sing 1
+Ontario,3560,2021A00033560,Kenora,"Kenora, Unorganized"
+Manitoba,4601,2021A00034601,Division No.  1,Victoria Beach
+Manitoba,4602,2021A00034602,Division No.  2,Ritchot
+Manitoba,4603,2021A00034603,Division No.  3,Dufferin
+Manitoba,4604,2021A00034604,Division No.  4,Argyle
+Manitoba,4605,2021A00034605,Division No.  5,Two Borders
+Manitoba,4606,2021A00034606,Division No.  6,Wallace-Woodworth
+Manitoba,4607,2021A00034607,Division No.  7,Riverdale
+Manitoba,4608,2021A00034608,Division No.  8,Glenella-Lansdowne
+Manitoba,4609,2021A00034609,Division No.  9,Portage la Prairie
+Manitoba,4610,2021A00034610,Division No. 10,St. François Xavier
+Manitoba,4611,2021A00034611,Division No. 11,Winnipeg
+Manitoba,4612,2021A00034612,Division No. 12,Brokenhead
+Manitoba,4613,2021A00034613,Division No. 13,West St. Paul
+Manitoba,4614,2021A00034614,Division No. 14,Rockwood
+Manitoba,4615,2021A00034615,Division No. 15,Gambler 63 (Part)
+Manitoba,4616,2021A00034616,Division No. 16,Hillsburg-Roblin-Shell River
+Manitoba,4617,2021A00034617,Division No. 17,Mossey River
+Manitoba,4618,2021A00034618,Division No. 18,Fairford 50
+Manitoba,4619,2021A00034619,Division No. 19,Chemawawin 3
+Manitoba,4620,2021A00034620,Division No. 20,Mountain (North)
+Manitoba,4621,2021A00034621,Division No. 21,Flin Flon (Part)
+Manitoba,4622,2021A00034622,Division No. 22,Split Lake 171
+Manitoba,4623,2021A00034623,Division No. 23,Lac Brochet 197A
+Saskatchewan,4701,2021A00034701,Division No.  1,Kennedy
+Saskatchewan,4702,2021A00034702,Division No.  2,Avonlea
+Saskatchewan,4703,2021A00034703,Division No.  3,Neville
+Saskatchewan,4704,2021A00034704,Division No.  4,Maple Creek
+Saskatchewan,4705,2021A00034705,Division No.  5,Goodeve
+Saskatchewan,4706,2021A00034706,Division No.  6,Regina
+Saskatchewan,4707,2021A00034707,Division No.  7,King George No. 256
+Saskatchewan,4708,2021A00034708,Division No.  8,Chesterfield No. 261
+Saskatchewan,4709,2021A00034709,Division No.  9,Preeceville No. 334
+Saskatchewan,4710,2021A00034710,Division No. 10,Watson
+Saskatchewan,4711,2021A00034711,Division No. 11,Saskatoon
+Saskatchewan,4712,2021A00034712,Division No. 12,Sweet Grass 113-M16
+Saskatchewan,4713,2021A00034713,Division No. 13,Manitou Lake No. 442
+Saskatchewan,4714,2021A00034714,Division No. 14,Torch River No. 488
+Saskatchewan,4715,2021A00034715,Division No. 15,Paddockwood No. 520
+Saskatchewan,4716,2021A00034716,Division No. 16,Big River No. 555
+Saskatchewan,4717,2021A00034717,Division No. 17,Beaver River No. 622
+Saskatchewan,4718,2021A00034718,Division No. 18,"Division No. 18, Unorganized"
+Alberta,4801,2021A00034801,Division No.  1,Cypress County
+Alberta,4802,2021A00034802,Division No.  2,Lethbridge
+Alberta,4803,2021A00034803,Division No.  3,Nanton
+Alberta,4804,2021A00034804,Division No.  4,Special Area No. 4
+Alberta,4805,2021A00034805,Division No.  5,Kneehill County
+Alberta,4806,2021A00034806,Division No.  6,Calgary
+Alberta,4807,2021A00034807,Division No.  7,Flagstaff County
+Alberta,4808,2021A00034808,Division No.  8,Red Deer
+Alberta,4809,2021A00034809,Division No.  9,O'Chiese 203
+Alberta,4810,2021A00034810,Division No. 10,Lamont
+Alberta,4811,2021A00034811,Division No. 11,Edmonton
+Alberta,4812,2021A00034812,Division No. 12,Lac la Biche County
+Alberta,4813,2021A00034813,Division No. 13,Athabasca County
+Alberta,4814,2021A00034814,Division No. 14,Improvement District No. 25 Willmore Wilderness
+Alberta,4815,2021A00034815,Division No. 15,Jasper
+Alberta,4816,2021A00034816,Division No. 16,Thabacha Náre 196A
+Alberta,4817,2021A00034817,Division No. 17,Upper Hay River 212
+Alberta,4818,2021A00034818,Division No. 18,Greenview No. 16
+Alberta,4819,2021A00034819,Division No. 19,Saddle Hills County
+British Columbia,5901,2021A00035901,East Kootenay,East Kootenay G
+British Columbia,5903,2021A00035903,Central Kootenay,Central Kootenay K
+British Columbia,5905,2021A00035905,Kootenay Boundary,Kootenay Boundary E / West Boundary
+British Columbia,5907,2021A00035907,Okanagan-Similkameen,Okanagan-Similkameen H
+British Columbia,5909,2021A00035909,Fraser Valley,Abbotsford
+British Columbia,5915,2021A00035915,Greater Vancouver,West Vancouver
+British Columbia,5917,2021A00035917,Capital,North Saanich
+British Columbia,5919,2021A00035919,Cowichan Valley,Cowichan Valley I
+British Columbia,5921,2021A00035921,Nanaimo,Nanaimo H
+British Columbia,5923,2021A00035923,Alberni-Clayoquot,Hesquiat 1
+British Columbia,5924,2021A00035924,Strathcona,Tsa Xana 18
+British Columbia,5926,2021A00035926,Comox Valley,Comox Valley C (Puntledge - Black Creek)
+British Columbia,5927,2021A00035927,Powell River,qathet A
+British Columbia,5929,2021A00035929,Sunshine Coast,Sechelt (Part)
+British Columbia,5931,2021A00035931,Squamish-Lillooet,Squamish-Lillooet A
+British Columbia,5933,2021A00035933,Thompson-Nicola,Kamloops
+British Columbia,5935,2021A00035935,Central Okanagan,Kelowna
+British Columbia,5937,2021A00035937,North Okanagan,North Okanagan F
+British Columbia,5939,2021A00035939,Columbia-Shuswap,Columbia-Shuswap F
+British Columbia,5941,2021A00035941,Cariboo,Coglistiko River 29
+British Columbia,5943,2021A00035943,Mount Waddington,Hope Island 1
+British Columbia,5945,2021A00035945,Central Coast,Bella Bella 1
+British Columbia,5947,2021A00035947,Skeena-Queen Charlotte,Masset 1
+British Columbia,5949,2021A00035949,Kitimat-Stikine,Dease Lake 9
+British Columbia,5951,2021A00035951,Bulkley-Nechako,Granisle
+British Columbia,5953,2021A00035953,Fraser-Fort George,Prince George
+British Columbia,5955,2021A00035955,Peace River,Fort Ware 1
+British Columbia,5957,2021A00035957,Stikine,Good Hope Lake
+British Columbia,5959,2021A00035959,Northern Rockies,Northern Rockies
+Yukon,6001,2021A00036001,Yukon,Old Crow
+Northwest Territories,6101,2021A00036101,Region 1,Sachs Harbour
+Northwest Territories,6102,2021A00036102,Region 2,Fort Good Hope
+Northwest Territories,6103,2021A00036103,Region 3,Gamètì
+Northwest Territories,6104,2021A00036104,Region 4,Wrigley
+Northwest Territories,6105,2021A00036105,Region 5,Fort Resolution
+Northwest Territories,6106,2021A00036106,Region 6,Dettah
+Nunavut,6204,2021A00036204,Qikiqtaaluk,Grise Fiord
+Nunavut,6205,2021A00036205,Kivalliq,Naujaat
+Nunavut,6208,2021A00036208,Kitikmeot,"Kitikmeot, Unorganized"
