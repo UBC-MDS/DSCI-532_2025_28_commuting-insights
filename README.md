@@ -51,7 +51,7 @@ To run the app locally, you'll need to set up your environment with the required
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/your-username/commuting-insights.git
+    git clone https://github.com/UBC-MDS/DSCI-532_2025_28_commuting-insights
     ```
 
 2. Navigate to the project directory:
