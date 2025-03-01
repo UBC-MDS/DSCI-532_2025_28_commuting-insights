@@ -42,8 +42,8 @@ These changes have minimal impact on the app's intended purpose while reducing c
 
 ### Summary
 
-- Strengths: The app is responsive both locally and in `render.com`, aligns with expectations, and follows best practices. It has a well-structured layout.
-- Limitations: While the app performs well locally, responsiveness is slow on Render.
+- Strengths: The app aligns with expectations, follows best practices and has a well-structured layout.
+- Limitations: While the app is functional running locally and on Render, responsiveness is slow on Render and update times are long.
 - Limitations: Additional features compromise rendering process. Code optimization is necessary to scale the app.
 - Future Improvement: The scatter plot could display `Commuting Density` on the x-axis instead of `Total Commute Observations`. Since `area` data is not available to calculate `Commuting Density`, the improvement would involve finding and incorporating it into the dataset.
 - Future Improvement: The app could be improved by recovering geographical categorization by `Province` to align to the availability of commute data.
