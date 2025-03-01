@@ -155,6 +155,7 @@ def update_mode_options(selected_cd):
 
 
 ### --- COMPONENTS ---
+
 title = html.H1("Commuting Insights")
 cd_dropdown_label = dbc.Label("Census Division")
 cd_dropdown = dcc.Dropdown(
@@ -183,48 +184,62 @@ time_slider = dcc.RangeSlider(
     allowCross=False,
     pushable=1
 )
+
 map_title = html.H5("Average Commute Time by Census Division")
 choropleth_map = dcc.Graph(id="choropleth-map")
-scatter_title = html.H5("Average Commute Time by Number of Observations")
-scatter_label = dbc.Label("Each point is a unique combination of Census Division and Mode.")
-scatter_plot = dvc.Vega(id="altair-scatter-plot")
-violin_title = html.H5("Commute Times by Mode")
-violin_label_shape = dbc.Label("• Light gray violins show the national (all-Canada) trend for the selected time range.")
-violin_label_line = dbc.Label("• Canadian red horizontal lines show the national weighted average; blue horizontal lines show the weighted average for the selected Census Division.")
+
+violin_title = html.H5("Commute Times by Mode, Current Division vs. Canada")
+violin_label_shape = dbc.Label("• Light red violins show the national (all-Canada) trend for the selected time range. Red horizontal lines show national weighted average.")
+violin_label_line = dbc.Label("• Blue horizontal lines show the weighted average for the currently selected Census Division.")
 violin_plot = dvc.Vega(id="altair-violin-plot")
+
 bar_title = html.H5("Commute Duration Distribution")
 bar_chart = dvc.Vega(id="altair-bar-chart")
-line_title = html.H5("Weighted Average Commute Time by Time of Day")
-line_chart = dvc.Vega(id="altair-line-chart")
+
+# line_title = html.H5("Weighted Average Commute Time by Time of Day")
+# line_chart = dvc.Vega(id="altair-line-chart")
+
+# scatter_title = html.H5("Average Commute Time by Number of Observations")
+# scatter_label = dbc.Label("Each point is a unique combination of Census Division and Mode.")
+# scatter_plot = dvc.Vega(id="altair-scatter-plot")
+
+footer = dbc.Container([
+    html.Hr(),
+    dbc.Row(dbc.Col(html.P("Commuting Insights is an interactive visualization dashboard for analyzing commuting patterns across Canadian Census Divisions. Users can explore commute times by mode of transport, time of day, and region. Commuting Insights aims to assist the Canadian Federal government in identifying trends for the purpose of informing national transportation funding strategies."))),
+    dbc.Row(dbc.Col(html.P("Created by:"))),
+    dbc.Row(dbc.Col(html.Ul([
+        html.Li(html.A("Francisco Ramirez", href="https://github.com/fraramfra", target="_blank")),
+        html.Li(html.A("Jinxiong (Eugene) You", href="https://github.com/jinxyou", target="_blank")),
+        html.Li(html.A("Derek Rodgers", href="https://github.com/derekrodgers", target="_blank")),
+        html.Li(html.A("Han Wang", href="https://github.com/hanwang205", target="_blank")),
+    ]))),
+    dbc.Row(dbc.Col(html.A("View on GitHub", href="https://github.com/UBC-MDS/DSCI-532_2025_28_commuting-insights", target="_blank", style={"font-weight": "bold"}))),
+    html.Br(),
+    dbc.Row(dbc.Col(html.P("Last updated: Saturday, 29 Feb 2025", style={"font-style": "italic"})))
+], fluid=True)
 
 ### --- LAYOUT ---
+
 app.layout = dbc.Container([
     dbc.Row(dbc.Col(title, width=12)),
     html.Br(),
     dbc.Row([
-        dbc.Col([cd_dropdown_label, cd_dropdown], md=4),
-        dbc.Col([mode_dropdown_label, mode_dropdown], md=4),
-        dbc.Col([time_slider_label, time_slider], md=4)
+        dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
+        dbc.Col([mode_dropdown_label, mode_dropdown], md=3),
+        dbc.Col([time_slider_label, time_slider], md=6)
     ]),
     html.Br(),
     dbc.Row([
         dbc.Col([
             dbc.Row(dbc.Col(map_title)),
             dbc.Row(dbc.Col(choropleth_map))
-        ], md=8),
+        ], md=7),
         dbc.Col([
-            dbc.Row(dbc.Col(scatter_title)),
-            dbc.Row(dbc.Col(scatter_label)),
-            dbc.Row(dbc.Col(scatter_plot))
-        ], md=4)
+            dbc.Row(dbc.Col(bar_title)),
+            dbc.Row(dbc.Col(bar_chart))
+        ], md=5)
     ]),
     html.Br(),
-    dbc.Row([
-        dbc.Col([
-            dbc.Row(dbc.Col(line_title)),
-            dbc.Row(dbc.Col(line_chart))
-        ], width=12)
-    ]),
     html.Br(),
     dbc.Row([
         dbc.Col([
@@ -232,26 +247,38 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(violin_label_shape)),
             dbc.Row(dbc.Col(violin_label_line)),
             dbc.Row(dbc.Col(violin_plot))
+
         ], width=12)
     ]),
+    # html.Br(),
+    # dbc.Row([
+    #     dbc.Col([
+    #         dbc.Row(dbc.Col(line_title)),
+    #         dbc.Row(dbc.Col(line_chart))
+    #     ], width=12)
+    # ]),
+    # html.Br(),
+    # dbc.Row([
+    #     dbc.Col([
+    #         dbc.Row(dbc.Col(scatter_title)),
+    #         dbc.Row(dbc.Col(scatter_label)),
+    #         dbc.Row(dbc.Col(scatter_plot))
+    #     ], width=12)
+    # ]),
     html.Br(),
-    dbc.Row([
-        dbc.Col([
-            dbc.Row(dbc.Col(bar_title)),
-            dbc.Row(dbc.Col(bar_chart))
-        ], width=12)
-    ])
+    footer
 ], fluid=True)
 
 
 ### --- CALLBACKS ---
+
 @app.callback(
     [
         Output("choropleth-map", "figure"),
         Output("altair-violin-plot", "spec"),
-        Output("altair-scatter-plot", "spec"),
+        # Output("altair-scatter-plot", "spec"),
         Output("altair-bar-chart", "spec"),
-        Output("altair-line-chart", "spec")
+        # Output("altair-line-chart", "spec")
     ],
     [
         Input("cd-dropdown", "value"),
@@ -291,7 +318,12 @@ def update_charts(selected_cd, selected_modes, time_range):
     fig_map.update_traces(
         hovertemplate="<b>%{hovertext}</b><br>Average Commute: %{customdata[0]} min<extra></extra>"
     )
-    fig_map.update_layout(coloraxis_colorbar_title="Minutes", margin={"r":0,"t":0,"l":0,"b":30})
+    fig_map.update_layout(
+        coloraxis_colorbar_title="Minutes",
+        margin={"r":0,"t":0,"l":0,"b":30},
+        height=488,
+        width=1200
+    )
     
     # ---- Altair Violin Plot with Weighted Horizontal Rules ----
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
@@ -357,60 +389,63 @@ def update_charts(selected_cd, selected_modes, time_range):
     density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
     density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
     
-    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="lightgray", opacity=0.3).encode(
-        y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
+    #weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="lightgray", opacity=0.3).encode(
+    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="red", opacity=0.25).encode(
+        y=alt.Y("AverageCommuteTime:Q", title="Weighted Average Commute Time (min)"),
         x=alt.X("density:Q", stack="center", title=None, axis=None)
     ).properties(width=100, height=400)
     
     # National weighted average (Canadian red horizontal rule).
     national_rule = alt.Chart(density_merged).mark_rule(color="#FF3C3C", strokeWidth=5).encode(
         y=alt.Y("nationalMean:Q"),
-        tooltip=alt.Tooltip("nationalMean:Q", format=".1f", title="National Weighted Average")
+        tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="National Weighted Average"),
+         alt.Tooltip("", type="nominal", title="")]
     )
     
     # CD weighted average (blue horizontal rule).
     blue_rule = alt.Chart(density_merged).mark_rule(color="blue", strokeWidth=5).encode(
         y=alt.Y("cdMean:Q"),
-        tooltip=alt.Tooltip("cdMean:Q", format=".1f", title="CD Weighted Average")
+        tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Census Division Weighted Average"),
+         alt.Tooltip("", type="nominal", title="")]
     )
     
     final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
     ).resolve_scale(x="independent").configure_view(clip=True)
+
+    # # ---- Altair Scatter Plot ----
+    # scatter_data = base_data.copy()
+    # if selected_cd:
+    #     scatter_data = scatter_data[scatter_data["GEO"] == selected_cd]
     
-    # ---- Altair Scatter Plot (unchanged) ----
-    scatter_data = base_data.copy()
-    if selected_cd:
-        scatter_data = scatter_data[scatter_data["GEO"] == selected_cd]
+    # scatter_agg = (
+    #     scatter_data.groupby(["GEO", "Main mode of commuting (21)"], as_index=False)
+    #     .apply(lambda g: pd.Series({
+    #         "TotalDuration": g["TotalDuration"].sum(),
+    #         "WeightedAvgCommute": (
+    #             (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
+    #             if g["TotalDuration"].sum() != 0 else None
+    #         )
+    #     }))
+    # )
     
-    scatter_agg = (
-        scatter_data.groupby(["GEO", "Main mode of commuting (21)"], as_index=False)
-        .apply(lambda g: pd.Series({
-            "TotalDuration": g["TotalDuration"].sum(),
-            "WeightedAvgCommute": (
-                (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-                if g["TotalDuration"].sum() != 0 else None
-            )
-        }))
-    )
-    
-    scatter = (
-        alt.Chart(scatter_agg)
-        .mark_point()
-        .encode(
-            x=alt.X("TotalDuration:Q", title="Total Observations"),
-            y=alt.Y("WeightedAvgCommute:Q", title="Weighted Average Commute (min)"),
-            color=alt.Color("Main mode of commuting (21):N", title="Mode"),
-            tooltip=[
-                alt.Tooltip("GEO:N", title="Census Division"),
-                alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
-                alt.Tooltip("TotalDuration:Q", format=",.0f", title="Observations"),
-                alt.Tooltip("WeightedAvgCommute:Q", format=",.1f", title="Weighted Avg Commute")
-            ]
-        )
-        .properties(width=370, height=370)
-        .interactive()
-    )
+    # scatter = (
+    #     alt.Chart(scatter_agg)
+    #     .mark_point()
+    #     .encode(
+    #         x=alt.X("TotalDuration:Q", title="Total Commute Observations"),
+    #         y=alt.Y("WeightedAvgCommute:Q", title="Weighted Average Commute Time (min)"),
+    #         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
+    #         tooltip=[
+    #             alt.Tooltip("GEO:N", title="Census Division"),
+    #             alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
+    #             alt.Tooltip("TotalDuration:Q", format=",.0f", title="Observations"),
+    #             alt.Tooltip("WeightedAvgCommute:Q", format=",.1f", title="Weighted Avg Commute")
+    #         ]
+    #     )
+    #     .properties(width=370, height=370)
+    #     .interactive()
+    # )
     
     # ---- Altair Bar Chart: Stacked Counts for Duration Categories ----
     # Use the same filtered data (base_data) and melt the five duration columns.
@@ -435,45 +470,53 @@ def update_charts(selected_cd, selected_modes, time_range):
     bar_data["DurationCategory"] = bar_data["DurationCategory"].map(lambda t: duration_labels.get(t, t))
     
     bar_chart = alt.Chart(bar_data).mark_bar().encode(
-        x=alt.X("DurationCategory:N", title="Commute Duration Category"),
-        y=alt.Y("Count:Q", title="Total Count"),
+        x=alt.X("DurationCategory:N",
+                title="Commute Duration Category",
+                sort=["Less than 15 minutes",
+                      "15 to 29 minutes",
+                      "30 to 44 minutes",
+                      "45 to 59 minutes",
+                      "60 minutes and over"]),
+        y=alt.Y("Count:Q", title="Count of Commute Observations"),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
         tooltip=[alt.Tooltip("DurationCategory:N"), alt.Tooltip("Count:Q", format=",.0f")]
     ).properties(
         width=400,
-        height=300,
-        title="Commute Duration Distribution"
+        height=325
     )
     
-    # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
-    # Create a separate dataframe for the line chart that is not filtered by the time slider.
-    line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
-    if selected_cd:
-        line_df = line_df[line_df["GEO"] == selected_cd]
-    if selected_modes and len(selected_modes) > 0:
-        line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
-    # Exclude the summary row if present.
-    line_df = line_df[line_df["Time arriving at work (16)"] != "Total - Time arriving at work"]
-    line_df_agg = line_df.groupby(["Time arriving at work (16)", "Main mode of commuting (21)"]).apply(
-        lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-        if g["TotalDuration"].sum() != 0 else None
-    ).reset_index(name="weighted_avg")
+    # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
+    # # Create a separate dataframe for the line chart that is not filtered by the time slider.
+    # line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
+    # if selected_cd:
+    #     line_df = line_df[line_df["GEO"] == selected_cd]
+    # if selected_modes and len(selected_modes) > 0:
+    #     line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
+    # # Exclude the summary row if present.
+    # line_df = line_df[line_df["Time arriving at work (16)"] != "Total - Time arriving at work"]
+    # line_df_agg = line_df.groupby(["Time arriving at work (16)", "Main mode of commuting (21)"]).apply(
+    #     lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
+    #     if g["TotalDuration"].sum() != 0 else None
+    # ).reset_index(name="weighted_avg")
 
-    line_df_agg = line_df_agg[line_df_agg["weighted_avg"] != 0]
+    # line_df_agg = line_df_agg[line_df_agg["weighted_avg"] != 0]
     
-    line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
-        x=alt.X("Time arriving at work (16):N", sort=list(time_bins), title="Time arriving at work"),
-        y=alt.Y("weighted_avg:Q", title="Weighted Average Commute Time (min)"),
-        color=alt.Color("Main mode of commuting (21):N", title="Mode"),
-        tooltip=[
-            alt.Tooltip("Time arriving at work (16):N", title="Time"),
-            alt.Tooltip("weighted_avg:Q", format=".1f", title="Weighted Average")
-        ]
-    ).properties(width=400, height=300, title="Weighted Average Commute Time by Time of Day")
+    # line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
+    #     x=alt.X("Time arriving at work (16):N", sort=list(time_bins), title="Time arriving at work"),
+    #     y=alt.Y("weighted_avg:Q", title="Weighted Average Commute Time (min)"),
+    #     color=alt.Color("Main mode of commuting (21):N", title="Mode"),
+    #     tooltip=[
+    #         alt.Tooltip("Time arriving at work (16):N", title="Time"),
+    #         alt.Tooltip("weighted_avg:Q", format=".1f", title="Weighted Average")
+    #     ]
+    # ).properties(width=400, height=300)
     
-    return fig_map, final_violin.to_dict(format="vega"), scatter.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
-    
+    #return fig_map, final_violin.to_dict(format="vega"), scatter.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+    return fig_map, final_violin.to_dict(format="vega"), bar_chart.to_dict(format="vega")
+
+
 ### --- RUN THE APP ---
+
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
