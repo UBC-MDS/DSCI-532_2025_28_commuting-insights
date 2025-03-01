@@ -16,7 +16,6 @@ By using this dashboard, you'll be able to explore:
 
 - **Regional Commute Times:** Discover how long people are commuting in different parts of Canada.
 - **Modes of Transportation:** See which modes of transport (e.g., cars, public transit, bicycles) are most commonly used in various regions.
-- **Environmental Impact:** Analyze how commuting habits are contributing to CO2 emissions and identify areas where improvements can be made.
 
 The dashboard features:
 
