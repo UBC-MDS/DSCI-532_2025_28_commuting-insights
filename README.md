@@ -57,7 +57,7 @@ To run the app locally, you'll need to set up your environment with the required
 2. Navigate to the project directory:
 
     ```bash
-    cd commuting-insights
+    cd DSCI-532_2025_28_commuting-insights
     ```
 
 3. Create a conda environment based on the provided `environment.yml` file:
