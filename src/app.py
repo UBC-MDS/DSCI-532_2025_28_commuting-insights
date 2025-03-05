@@ -288,27 +288,43 @@ app.layout = dbc.Container([
 )
 def update_charts(selected_cd, selected_modes, time_range):
     # ---- Choropleth Map ----
-    filtered_df = df.copy()
+    # Start with all data and filter by Census Division and time range.
+    map_df = df.copy()
+
+    # Filter by Census Division if selected.
     if selected_cd:
-        filtered_df = filtered_df[filtered_df["GEO"] == selected_cd]
+        map_df = map_df[map_df["GEO"] == selected_cd]
     if selected_modes and len(selected_modes) > 0:
-        filtered_df = filtered_df[filtered_df["Main mode of commuting (21)"].isin(selected_modes)]
-    filtered_df = filtered_df[filtered_df["Time arriving at work (16)"].isin(time_bin_order.keys())]
-    filtered_df = filtered_df[
-        filtered_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
-                 .between(time_range[0], time_range[1], inclusive="left")
+        map_df = map_df[map_df["Main mode of commuting (21)"].isin(selected_modes)]
+
+    # Ensure only valid time bins are used and apply the time range filter.
+    map_df = map_df[map_df["Time arriving at work (16)"].isin(time_bin_order.keys())]
+    map_df = map_df[
+        map_df["Time arriving at work (16)"]
+        .apply(lambda t: time_bin_order[t])
+        .between(time_range[0], time_range[1], inclusive="left")
     ]
     
+    # Remove rows with missing numeric values.
+    map_df = map_df.dropna(subset=["AverageCommuteTime", "TotalDuration"])
+
+    # Group by division (using both DGUID and GEO) and compute the weighted average.
+    agg_df = map_df.groupby(["DGUID", "GEO"]).apply(
+        lambda g: np.average(g["AverageCommuteTime"], weights=g["TotalDuration"])
+        if g["TotalDuration"].sum() > 0 else np.nan
+    ).reset_index(name="WeightedAverageCommute")
+
+    # Create the choropleth map with the aggregated weighted averages.
     fig_map = px.choropleth_map(
-        filtered_df,
+        agg_df,
         geojson=geojson_data,
         locations="DGUID",
         featureidkey="properties.DGUID",
-        color="AverageCommuteTime",
+        color="WeightedAverageCommute",
         color_continuous_scale="OrRd",
         hover_name="GEO",
-        hover_data={"DGUID": False, "AverageCommuteTime": ":.0f"},
-        custom_data=["AverageCommuteTime"],
+        hover_data={"DGUID": False, "WeightedAverageCommute": ":.0f"},
+        custom_data=["WeightedAverageCommute"],
         map_style="open-street-map",
         center={"lat": 56, "lon": -106},
         zoom=3,
@@ -316,14 +332,15 @@ def update_charts(selected_cd, selected_modes, time_range):
     )
     fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
     fig_map.update_traces(
-        hovertemplate="<b>%{hovertext}</b><br>Average Commute: %{customdata[0]} min<extra></extra>"
+        hovertemplate="<b>%{hovertext}</b><br>Weighted Avg Commute: %{customdata[0]} min<extra></extra>"
     )
     fig_map.update_layout(
         coloraxis_colorbar_title="Minutes",
-        margin={"r":0,"t":0,"l":0,"b":30},
+        margin={"r": 0, "t": 0, "l": 0, "b": 30},
         height=488,
         width=1200
     )
+
     
     # ---- Altair Violin Plot with Weighted Horizontal Rules ----
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
@@ -520,4 +537,4 @@ def update_charts(selected_cd, selected_modes, time_range):
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=False)
+    app.run_server(host="0.0.0.0", port=port, debug=True)
