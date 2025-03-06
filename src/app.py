@@ -205,7 +205,7 @@ bar_chart = dvc.Vega(id="altair-bar-chart")
 
 footer = dbc.Container([
     html.Hr(),
-    dbc.Row(dbc.Col(html.P("Commuting Insights is an interactive visualization dashboard for analyzing commuting patterns across Canadian Census Divisions. Users can explore commute times by mode of transport, time of day, and region. Commuting Insights aims to assist the Canadian Federal government in identifying trends for the purpose of informing national transportation funding strategies."))),
+    dbc.Row(dbc.Col(html.P("Commuting Insights is an interactive visualization dashboard for analyzing commuting patterns across Canadian Census Divisions. Users can explore commute times by mode of transport, time of day, and region. Commuting Insights aims to assist the Canadian Federal government in identifying trends for the purpose of informing national transportation funding strategies."), md=6)),
     dbc.Row(dbc.Col(html.P("Created by:"))),
     dbc.Row(dbc.Col(html.Ul([
         html.Li(html.A("Francisco Ramirez", href="https://github.com/fraramfra", target="_blank")),
@@ -323,7 +323,6 @@ def update_charts(selected_cd, selected_modes, time_range):
         color="WeightedAverageCommute",
         color_continuous_scale="OrRd",
         hover_name="GEO",
-        hover_data={"DGUID": False, "WeightedAverageCommute": ":.0f"},
         custom_data=["WeightedAverageCommute"],
         map_style="open-street-map",
         center={"lat": 56, "lon": -106},
@@ -332,13 +331,12 @@ def update_charts(selected_cd, selected_modes, time_range):
     )
     fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
     fig_map.update_traces(
-        hovertemplate="<b>%{hovertext}</b><br>Weighted Avg Commute: %{customdata[0]} min<extra></extra>"
+        hovertemplate="<b>%{hovertext}</b><br /><br />Avg commute (currrent filters): %{customdata[0]:.1f} min<extra></extra>"
     )
     fig_map.update_layout(
         coloraxis_colorbar_title="Minutes",
         margin={"r": 0, "t": 0, "l": 0, "b": 30},
-        height=488,
-        width=1200
+        height=488
     )
 
     
@@ -478,27 +476,27 @@ def update_charts(selected_cd, selected_modes, time_range):
     
     # Map raw duration column names to descriptive labels.
     duration_labels = {
-        "Less15": "Less than 15 minutes",
-        "15to29": "15 to 29 minutes",
-        "30to44": "30 to 44 minutes",
-        "45to59": "45 to 59 minutes",
-        "60plus": "60 minutes and over"
+        "Less15": "< 15 mins",
+        "15to29": "15 - 29 mins",
+        "30to44": "30 - 44 mins",
+        "45to59": "45 - 59 mins",
+        "60plus": "More than 60 mins"
     }
     bar_data["DurationCategory"] = bar_data["DurationCategory"].map(lambda t: duration_labels.get(t, t))
     
     bar_chart = alt.Chart(bar_data).mark_bar().encode(
         x=alt.X("DurationCategory:N",
                 title="Commute Duration Category",
-                sort=["Less than 15 minutes",
-                      "15 to 29 minutes",
-                      "30 to 44 minutes",
-                      "45 to 59 minutes",
-                      "60 minutes and over"]),
+                sort=["< 15 mins",
+                      "15 - 29 mins",
+                      "30 - 44 mins",
+                      "45 - 59 mins",
+                      "More than 60 mins"]),
         y=alt.Y("Count:Q", title="Count of Commute Observations"),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
         tooltip=[alt.Tooltip("DurationCategory:N"), alt.Tooltip("Count:Q", format=",.0f")]
     ).properties(
-        width=400,
+        width="container",
         height=325
     )
     
@@ -537,4 +535,4 @@ def update_charts(selected_cd, selected_modes, time_range):
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=True)
+    app.run_server(host="0.0.0.0", port=port, debug=False)
