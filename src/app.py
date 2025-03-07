@@ -139,8 +139,8 @@ def update_mode_options(selected_cd):
     df_cd = df[(df["GEO"] == selected_cd) & (df["AverageCommuteTime"] > 0)]
     # Get the unique modes that appear in the CD
     modes = df_cd["Main mode of commuting (21)"].unique()
-    # Only keep those modes that are in the allowed selectable_modes list
-    valid_modes = [m for m in modes if m in selectable_modes]
+    # Only keep those modes that are in the allowed available_modes list
+    valid_modes = [m for m in modes if m in available_modes]
     options = [{"label": m, "value": m} for m in valid_modes]
     return options
 
@@ -148,7 +148,7 @@ def update_mode_options(selected_cd):
 ### --- COMPONENTS ---
 
 title = html.H1("Commuting Insights")
-cd_dropdown_label = dbc.Label("Census Division")
+cd_dropdown_label = dbc.Label("Census Division (CD)")
 cd_dropdown = dcc.Dropdown(
     id="cd-dropdown",
     options=dropdown_cd_options,
@@ -179,15 +179,13 @@ time_slider = dcc.RangeSlider(
 map_title = html.H5("Average Commute Time by Census Division")
 choropleth_map = dcc.Graph(id="choropleth-map")
 
-violin_title = html.H5("Commute Times by Mode, Current Division vs. Canada")
-violin_label_shape = dbc.Label("• Light red violins show the national (all-Canada) trend for the selected time range. Red horizontal lines show national weighted average.")
-violin_label_line = dbc.Label("• Blue horizontal lines show the weighted average for the currently selected Census Division.")
+violin_title = html.H5("Commute Times by Mode, Selected Census Division vs. Canada")
 violin_plot = dvc.Vega(id="altair-violin-plot")
 
 bar_title = html.H5("Commute Duration Distribution")
 bar_chart = dvc.Vega(id="altair-bar-chart")
 
-line_title = html.H5("Weighted Average Commute Time by Time of Day")
+line_title = html.H5("Average Commute Time by Time of Day")
 line_chart = dvc.Vega(id="altair-line-chart")
 
 footer = dbc.Container([
@@ -212,8 +210,8 @@ app.layout = dbc.Container([
     html.Br(),
     dbc.Row([
         dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
-        dbc.Col([mode_dropdown_label, mode_dropdown], md=3),
-        dbc.Col([time_slider_label, time_slider], md=6)
+        dbc.Col([mode_dropdown_label, mode_dropdown], md=2),
+        dbc.Col([time_slider_label, time_slider], md=7)
     ]),
     html.Br(),
     dbc.Row([
@@ -226,25 +224,16 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(bar_chart))
         ], md=5)
     ]),
-    html.Br(),
-    html.Br(),
     dbc.Row([
         dbc.Col([
             dbc.Row(dbc.Col(violin_title)),
-            dbc.Row(dbc.Col(violin_label_shape)),
-            dbc.Row(dbc.Col(violin_label_line)),
             dbc.Row(dbc.Col(violin_plot))
-
-        ], width=12)
-    ]),
-    html.Br(),
-    dbc.Row([
+        ], md=7),
         dbc.Col([
             dbc.Row(dbc.Col(line_title)),
             dbc.Row(dbc.Col(line_chart))
-        ], width=12)
+        ], md=5)
     ]),
-    html.Br(),
     footer
 ], fluid=True)
 
@@ -264,6 +253,7 @@ app.layout = dbc.Container([
         Input("time-slider", "value")
     ]
 )
+
 def update_charts(selected_cd, selected_modes, time_range):
     # ---- Choropleth Map ----
     # Start with all data and filter by Census Division and time range.
@@ -309,14 +299,13 @@ def update_charts(selected_cd, selected_modes, time_range):
     )
     fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
     fig_map.update_traces(
-        hovertemplate="<b>%{hovertext}</b><br /><br />Avg commute (currrent filters): %{customdata[0]:.1f} min<extra></extra>"
+        hovertemplate="<b>%{hovertext}</b><br /><br />Average, currrent filters: %{customdata[0]:.1f} min<extra></extra>"
     )
     fig_map.update_layout(
         coloraxis_colorbar_title="Minutes",
-        margin={"r": 0, "t": 0, "l": 0, "b": 30},
+        margin={"r": 0, "t": 0, "l": 0, "b": 70},
         height=488
     )
-
     
     # ---- Altair Violin Plot with Weighted Horizontal Rules ----
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
@@ -382,30 +371,71 @@ def update_charts(selected_cd, selected_modes, time_range):
     density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
     density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
     
-    #weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="lightgray", opacity=0.3).encode(
     weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="red", opacity=0.25).encode(
-        y=alt.Y("AverageCommuteTime:Q", title="Weighted Average Commute Time (min)"),
+        y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
         x=alt.X("density:Q", stack="center", title=None, axis=None)
     ).properties(width=100, height=400)
     
     # National weighted average (Canadian red horizontal rule).
     national_rule = alt.Chart(density_merged).mark_rule(color="#FF3C3C", strokeWidth=5).encode(
         y=alt.Y("nationalMean:Q"),
-        tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="National Weighted Average"),
+        tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)"),
          alt.Tooltip("", type="nominal", title="")]
     )
     
     # CD weighted average (blue horizontal rule).
     blue_rule = alt.Chart(density_merged).mark_rule(color="blue", strokeWidth=5).encode(
         y=alt.Y("cdMean:Q"),
-        tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Census Division Weighted Average"),
+        tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)"),
          alt.Tooltip("", type="nominal", title="")]
     )
     
     final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
-    ).resolve_scale(x="independent").configure_view(clip=True)
-    
+    ).resolve_scale(x="independent") 
+
+    legend_data = pd.DataFrame({
+        "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
+        "Color": ["red", "blue"]
+    })
+
+    # Circles
+    legend_points = (
+        alt.Chart(legend_data)
+        .mark_circle(size=100)
+        .encode(
+            # We’ll map each row to a distinct Y-position, effectively stacking them
+            y=alt.Y("Label:N", axis=None),
+            # Fix the x-position of the circles
+            x=alt.value(10),
+            color=alt.Color("Color:N", scale=None)  # Use the “Color” column as-is
+        )
+    )
+
+    # Text
+    legend_text = (
+        alt.Chart(legend_data)
+        .mark_text(align="left", dx=10)  # shift text to the right
+        .encode(
+            y=alt.Y("Label:N", axis=None),
+            x=alt.value(10),  # line up horizontally with circles
+            text="Label:N"
+        )
+    )
+
+    # Combine the points + text into one layer
+    custom_legend = (
+        alt.layer(legend_points, legend_text)
+        .properties(width=120, height=60)
+    )
+
+    final_violin_with_legend = (
+        alt.HConcatChart(hconcat=[final_violin, custom_legend])
+        .configure_view(stroke=None)
+        .configure_axis(titleFontSize=14, labelFontSize=12)
+        .configure_header(titleFontSize=14, labelFontSize=12)
+    )
+
     # ---- Altair Bar Chart: Stacked Counts for Duration Categories ----
     # Use the same filtered data (base_data) and melt the five duration columns.
     bar_data = base_data.copy()
@@ -424,24 +454,32 @@ def update_charts(selected_cd, selected_modes, time_range):
         "15to29": "15 - 29 mins",
         "30to44": "30 - 44 mins",
         "45to59": "45 - 59 mins",
-        "60plus": "More than 60 mins"
+        "60plus": "> 60 mins"
     }
     bar_data["DurationCategory"] = bar_data["DurationCategory"].map(lambda t: duration_labels.get(t, t))
     
     bar_chart = alt.Chart(bar_data).mark_bar().encode(
-        x=alt.X("DurationCategory:N",
+        x=alt.X("Count:Q", title="Count of Commute Observations"),
+        y=alt.Y("DurationCategory:N",
                 title="Commute Duration Category",
-                sort=["< 15 mins",
-                      "15 - 29 mins",
-                      "30 - 44 mins",
-                      "45 - 59 mins",
-                      "More than 60 mins"]),
-        y=alt.Y("Count:Q", title="Count of Commute Observations"),
+                sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
+                axis=alt.Axis(labelAlign="left", orient="right")
+        ),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
-        tooltip=[alt.Tooltip("DurationCategory:N"), alt.Tooltip("Count:Q", format=",.0f")]
+        tooltip=[
+            alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
+            alt.Tooltip("DurationCategory:N", title="Duration Category"),
+            alt.Tooltip("Count:Q", format=",.0f")
+        ]
     ).properties(
         width="container",
-        height=325
+        height=425
+    ).configure_axis(
+        titleFontSize=14,
+        labelFontSize=13
+    ).configure_legend(
+        titleFontSize=14,
+        labelFontSize=13 
     )
     
     # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
@@ -462,15 +500,24 @@ def update_charts(selected_cd, selected_modes, time_range):
     
     line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
         x=alt.X("Time arriving at work (16):N", sort=list(time_bins), title="Time arriving at work"),
-        y=alt.Y("weighted_avg:Q", title="Weighted Average Commute Time (min)"),
+        y=alt.Y("weighted_avg:Q", title="Average Commute Time (min)"),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
         tooltip=[
             alt.Tooltip("Time arriving at work (16):N", title="Time"),
-            alt.Tooltip("weighted_avg:Q", format=".1f", title="Weighted Average")
+            alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
         ]
-    ).properties(width=400, height=300)
+    ).properties(
+        width="container",
+        height=400
+    ).configure_axis(
+        titleFontSize=14,
+        labelFontSize=13
+    ).configure_legend(
+        titleFontSize=14,
+        labelFontSize=13 
+    )
     
-    return fig_map, final_violin.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+    return fig_map, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
 
 
 ### --- RUN THE APP ---
@@ -478,4 +525,4 @@ def update_charts(selected_cd, selected_modes, time_range):
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=False)
+    app.run_server(host="0.0.0.0", port=port, debug=True)
