@@ -326,40 +326,52 @@ def update_charts(selected_cd, selected_modes, time_range):
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
     base_data["time_order"] = base_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
     base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
-    if not selected_modes or len(selected_modes) == 0:
-        selected_modes = list(available_modes)
-    base_data = base_data[base_data["Main mode of commuting (21)"].isin(selected_modes)]
-    
+
     if selected_cd:
         base_data["is_subset"] = base_data["GEO"] == selected_cd
     else:
         base_data["is_subset"] = False
     
+    # Right after you finish filtering base_data by time range, etc.:
+
+    if not selected_modes or len(selected_modes) == 0:
+        if selected_cd:
+            # Highlight only modes that have nonzero AverageCommuteTime in the chosen CD
+            modes_in_cd = base_data[
+                (base_data["GEO"] == selected_cd) & (base_data["AverageCommuteTime"] > 0)
+            ]["Main mode of commuting (21)"].unique()
+            selected_modes = list(modes_in_cd)
+        else:
+            # No CD chosen, highlight all modes with nonzero AverageCommuteTime
+            modes_nonzero = base_data[base_data["AverageCommuteTime"] > 0]["Main mode of commuting (21)"].unique()
+            selected_modes = list(modes_nonzero)
+
+    # Then set the "selected" flag:
+    base_data["selected"] = base_data["Main mode of commuting (21)"].isin(selected_modes)
+
     # Compute national weighted averages per mode.
     agg_national = (
         base_data.groupby("Main mode of commuting (21)")
         .apply(lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-               if g["TotalDuration"].sum() != 0 else None)
+            if g["TotalDuration"].sum() != 0 else None)
         .reset_index(name="nationalMean")
     )
-    
-    # Compute CD weighted averages if selected.
+
+    # Compute CD weighted averages if a Census Division is selected.
     if selected_cd:
         cd_data = base_data[base_data["GEO"] == selected_cd].copy()
         agg_cd = (
             cd_data.groupby("Main mode of commuting (21)")
             .apply(lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-                   if g["TotalDuration"].sum() != 0 else None)
+                if g["TotalDuration"].sum() != 0 else None)
             .reset_index(name="cdMean")
         )
     else:
         agg_cd = pd.DataFrame(columns=["Main mode of commuting (21)", "cdMean"])
-    
+
     merged_data = pd.merge(base_data, agg_national, on="Main mode of commuting (21)", how="left")
     merged_data = pd.merge(merged_data, agg_cd, on="Main mode of commuting (21)", how="left")
-    
-    base_chart = alt.Chart(merged_data)
-    
+
     # Compute weighted density for the violin plot using gaussian_kde.
     density_list = []
     x_grid = np.linspace(0, 60, 200)
@@ -379,39 +391,62 @@ def update_charts(selected_cd, selected_modes, time_range):
         density_list.append(temp_df)
     if density_list:
         density_df = pd.concat(density_list, ignore_index=True)
+        # Add selected flag to density_df
+        density_df["selected"] = density_df["Main mode of commuting (21)"].isin(selected_modes)
     else:
-        density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density"])
-    
-    # Merge density_df with aggregated weighted averages.
+        density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density", "selected"])
+
     density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
     density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
-    
-    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="red", opacity=0.25).encode(
+    # Ensure the 'selected' column is present
+    density_merged["selected"] = density_merged["Main mode of commuting (21)"].isin(selected_modes)
+
+    # Create the weighted density area with conditional color encoding.
+    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", opacity=0.25).encode(
         y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
-        x=alt.X("density:Q", stack="center", title=None, axis=None)
+        x=alt.X("density:Q", stack="center", title=None, axis=None),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("red"),   # normal color for selected modes
+            alt.value("grey")   # grey for unselected modes
+        )
     ).properties(width=100, height=400)
-    
-    # National weighted average (Canadian red horizontal rule).
-    national_rule = alt.Chart(density_merged).mark_rule(color="#FF3C3C", strokeWidth=5).encode(
+
+    # National weighted average (horizontal rule) with conditional color.
+    national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
         y=alt.Y("nationalMean:Q"),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("#FF3C3C"),
+            alt.value("grey")
+        ),
         tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+                alt.Tooltip("", type="nominal", title="")]
     )
-    
-    # CD weighted average (blue horizontal rule).
-    blue_rule = alt.Chart(density_merged).mark_rule(color="blue", strokeWidth=5).encode(
+
+    # CD weighted average (horizontal rule) with conditional color.
+    blue_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
         y=alt.Y("cdMean:Q"),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("blue"),
+            alt.value("grey")
+        ),
         tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+                alt.Tooltip("", type="nominal", title="")]
     )
-    
+
+    # Combine the density area and the horizontal rules, faceted by mode.
     final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
-    ).resolve_scale(x="independent") 
+    ).resolve_scale(x="independent")
+
+    # (The legend and subsequent chart configurations remain unchanged.)
+
 
     legend_data = pd.DataFrame({
-        "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
-        "Color": ["red", "blue"]
+        "Label": ["Average: Canada (min)", "Average: Selected CD (min)", "Unavailable"],
+        "Color": ["red", "blue", "grey"]
     })
 
     # Circles
@@ -540,4 +575,4 @@ def update_charts(selected_cd, selected_modes, time_range):
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=False)
+    app.run_server(host="0.0.0.0", port=port, debug=True)
