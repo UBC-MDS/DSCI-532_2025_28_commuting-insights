@@ -125,7 +125,7 @@ slider_marks[len(time_bins)] = "5am"  # Extra mark for the right endpoint
 
 ### --- INITIALIZATION ---
 alt.data_transformers.enable("vegafusion")
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN])
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
 server = app.server
 
 @app.callback(
@@ -147,7 +147,7 @@ def update_mode_options(selected_cd):
 
 ### --- COMPONENTS ---
 
-title = html.H1("Commuting Insights")
+title = html.H1("Commuting Insights Dashboard")
 cd_dropdown_label = dbc.Label("Census Division (CD)")
 cd_dropdown = dcc.Dropdown(
     id="cd-dropdown",
@@ -206,14 +206,26 @@ footer = dbc.Container([
 ### --- LAYOUT ---
 
 app.layout = dbc.Container([
-    dbc.Row(dbc.Col(title, width=12)),
+    dbc.Row(
+        dbc.Col(
+            dbc.Card(
+                dbc.Container([
+                    dbc.Row(dbc.Col(title, width=12)),
+                    html.Br(),
+                    dbc.Row([
+                        dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
+                        dbc.Col([mode_dropdown_label, mode_dropdown], md=2),
+                        dbc.Col([time_slider_label, time_slider], md=7)
+                    ]),
+                ], fluid=True),
+                style={"backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "10px"}
+            ),
+            width=12
+        ), className="mt-3"  # Adds top margin above the card
+    ),
     html.Br(),
-    dbc.Row([
-        dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
-        dbc.Col([mode_dropdown_label, mode_dropdown], md=2),
-        dbc.Col([time_slider_label, time_slider], md=7)
-    ]),
-    html.Br(),
+    
+    # First Chart Row - With Left & Right Padding
     dbc.Row([
         dbc.Col([
             dbc.Row(dbc.Col(map_title)),
@@ -223,7 +235,9 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(bar_title)),
             dbc.Row(dbc.Col(bar_chart))
         ], md=5)
-    ]),
+    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),  # Correctly applied padding
+
+    # Second Chart Row - With Left & Right Padding
     dbc.Row([
         dbc.Col([
             dbc.Row(dbc.Col(violin_title)),
@@ -233,7 +247,8 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(line_title)),
             dbc.Row(dbc.Col(line_chart))
         ], md=5)
-    ]),
+    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),  # Correctly applied padding
+
     footer
 ], fluid=True)
 
