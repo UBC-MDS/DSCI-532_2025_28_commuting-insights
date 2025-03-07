@@ -235,7 +235,7 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(bar_title)),
             dbc.Row(dbc.Col(bar_chart))
         ], md=5)
-    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),  # Correctly applied padding
+    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),
 
     # Second Chart Row - With Left & Right Padding
     dbc.Row([
@@ -247,7 +247,7 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(line_title)),
             dbc.Row(dbc.Col(line_chart))
         ], md=5)
-    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),  # Correctly applied padding
+    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),
 
     footer
 ], fluid=True)
@@ -540,4 +540,4 @@ def update_charts(selected_cd, selected_modes, time_range):
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=True)
+    app.run_server(host="0.0.0.0", port=port, debug=False)
