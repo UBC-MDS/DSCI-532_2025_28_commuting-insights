@@ -182,6 +182,9 @@ choropleth_map = dcc.Graph(id="choropleth-map")
 violin_title = html.H5("Commute Times by Mode, Selected Census Division vs. Canada")
 violin_plot = dvc.Vega(id="altair-violin-plot")
 
+legend_title = html.H5("Legend")
+legend_plot = dvc.Vega(id="altair-legend")
+
 bar_title = html.H5("Commute Duration Distribution")
 bar_chart = dvc.Vega(id="altair-bar-chart")
 
@@ -227,12 +230,18 @@ app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
             dbc.Row(dbc.Col(violin_title)),
-            dbc.Row(dbc.Col(violin_plot))
+            dbc.Row(dbc.Col(violin_plot, width=10))  # Make the violin take more space
         ], md=7),
+
+        dbc.Col([
+            dbc.Row(dbc.Col(legend_title)),  # Add legend title
+            dbc.Row(dbc.Col(legend_plot))  # Place legend separately
+        ], md=2),  # Give it a smaller width
+
         dbc.Col([
             dbc.Row(dbc.Col(line_title)),
             dbc.Row(dbc.Col(line_chart))
-        ], md=5)
+        ], md=3)  # Adjust the line chart width accordingly
     ]),
     footer
 ], fluid=True)
@@ -371,71 +380,67 @@ def update_charts(selected_cd, selected_modes, time_range):
     density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
     density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
     
-    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="red", opacity=0.25).encode(
+    # --- Responsive Violin Plot (Faceted) ---
+    weighted_violin = alt.Chart(density_merged).mark_area(
+        orient="horizontal", color="red", opacity=0.25
+    ).encode(
         y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
         x=alt.X("density:Q", stack="center", title=None, axis=None)
-    ).properties(width=100, height=400)
-    
-    # National weighted average (Canadian red horizontal rule).
+    ).properties(
+        height=400  # Keep height fixed, width is handled by facet spacing
+    )
+
+    # National and CD averages as horizontal rules
     national_rule = alt.Chart(density_merged).mark_rule(color="#FF3C3C", strokeWidth=5).encode(
         y=alt.Y("nationalMean:Q"),
-        tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+        tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)")]
     )
-    
-    # CD weighted average (blue horizontal rule).
+
     blue_rule = alt.Chart(density_merged).mark_rule(color="blue", strokeWidth=5).encode(
         y=alt.Y("cdMean:Q"),
-        tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+        tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)")]
     )
-    
-    final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
-        column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
-    ).resolve_scale(x="independent") 
 
+    # ✅ Corrected FacetChart (Remove width="container")
+    final_violin = alt.FacetChart(
+        facet=alt.Facet("Main mode of commuting (21):N", title="Commuting Mode"),
+        spec=alt.layer(weighted_violin, national_rule, blue_rule).properties(
+            width=100  # Set width per subplot instead of at the facet level
+        ),
+        columns=6  # Adjust based on available space
+    ).resolve_scale(x="independent")
+
+    # ---- Custom Legend as a Separate Chart ----
     legend_data = pd.DataFrame({
         "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
         "Color": ["red", "blue"]
     })
 
-    # Circles
     legend_points = (
         alt.Chart(legend_data)
         .mark_circle(size=100)
         .encode(
-            # We’ll map each row to a distinct Y-position, effectively stacking them
             y=alt.Y("Label:N", axis=None),
-            # Fix the x-position of the circles
             x=alt.value(10),
-            color=alt.Color("Color:N", scale=None)  # Use the “Color” column as-is
+            color=alt.Color("Color:N", scale=None)
         )
     )
 
-    # Text
     legend_text = (
         alt.Chart(legend_data)
-        .mark_text(align="left", dx=10)  # shift text to the right
+        .mark_text(align="left", dx=10)
         .encode(
             y=alt.Y("Label:N", axis=None),
-            x=alt.value(10),  # line up horizontally with circles
+            x=alt.value(10),
             text="Label:N"
         )
     )
 
-    # Combine the points + text into one layer
     custom_legend = (
         alt.layer(legend_points, legend_text)
-        .properties(width=120, height=60)
+        .properties(width=120, height=60)  # Keep legend width reasonable
     )
-
-    final_violin_with_legend = (
-        alt.HConcatChart(hconcat=[final_violin, custom_legend])
-        .configure_view(stroke=None)
-        .configure_axis(titleFontSize=14, labelFontSize=12)
-        .configure_header(titleFontSize=14, labelFontSize=12)
-    )
-
+    
     # ---- Altair Bar Chart: Stacked Counts for Duration Categories ----
     # Use the same filtered data (base_data) and melt the five duration columns.
     bar_data = base_data.copy()
@@ -517,7 +522,7 @@ def update_charts(selected_cd, selected_modes, time_range):
         labelFontSize=13 
     )
     
-    return fig_map, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+    return fig_map, final_violin.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega"), custom_legend.to_dict(format="vega")
 
 
 ### --- RUN THE APP ---
