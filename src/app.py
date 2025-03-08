@@ -550,13 +550,14 @@ def update_charts(selected_cd, selected_modes, time_range):
     
     # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
     # # Create a separate dataframe for the line chart that is not filtered by the time slider.
+        # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
     line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
     if selected_cd:
         line_df = line_df[line_df["GEO"] == selected_cd]
     if selected_modes and len(selected_modes) > 0:
         line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
-    # Exclude the summary row if present.
-    line_df = line_df[line_df["Time arriving at work (16)"] != "Total - Time arriving at work"]
+    # Filter based on the time slider range:
+    line_df = line_df[line_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t]).between(time_range[0], time_range[1], inclusive="left")]
     line_df_agg = line_df.groupby(["Time arriving at work (16)", "Main mode of commuting (21)"]).apply(
         lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
         if g["TotalDuration"].sum() != 0 else None
