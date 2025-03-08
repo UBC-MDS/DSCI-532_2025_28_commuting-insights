@@ -123,6 +123,7 @@ point_labels = {
 slider_marks = {i: point_labels[time_bins[i]] for i in range(len(time_bins))}
 slider_marks[len(time_bins)] = "5am"  # Extra mark for the right endpoint
 
+
 ### --- INITIALIZATION ---
 alt.data_transformers.enable("vegafusion")
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
@@ -144,6 +145,21 @@ def update_mode_options(selected_cd):
     options = [{"label": m, "value": m} for m in valid_modes]
     return options
 
+@app.callback(
+    Output("cd-dropdown", "options"),
+    [Input("mode-dropdown", "value")]
+)
+def update_cd_options(selected_modes):
+    # If no mode is selected, return all CD options.
+    if not selected_modes or len(selected_modes) == 0:
+        return dropdown_cd_options
+    # Filter the dataframe for selected modes with nonzero AverageCommuteTime.
+    df_modes = df[(df["Main mode of commuting (21)"].isin(selected_modes)) &
+                  (df["AverageCommuteTime"] > 0)]
+    unique_cds = df_modes["GEO"].unique()
+    # Sort the CDs for consistency
+    options = [{"label": cd, "value": cd} for cd in sorted(unique_cds)]
+    return options
 
 ### --- COMPONENTS ---
 
@@ -326,40 +342,52 @@ def update_charts(selected_cd, selected_modes, time_range):
     base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
     base_data["time_order"] = base_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
     base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
-    if not selected_modes or len(selected_modes) == 0:
-        selected_modes = list(available_modes)
-    base_data = base_data[base_data["Main mode of commuting (21)"].isin(selected_modes)]
-    
+
     if selected_cd:
         base_data["is_subset"] = base_data["GEO"] == selected_cd
     else:
         base_data["is_subset"] = False
     
+    # Right after you finish filtering base_data by time range, etc.:
+
+    if not selected_modes or len(selected_modes) == 0:
+        if selected_cd:
+            # Highlight only modes that have nonzero AverageCommuteTime in the chosen CD
+            modes_in_cd = base_data[
+                (base_data["GEO"] == selected_cd) & (base_data["AverageCommuteTime"] > 0)
+            ]["Main mode of commuting (21)"].unique()
+            selected_modes = list(modes_in_cd)
+        else:
+            # No CD chosen, highlight all modes with nonzero AverageCommuteTime
+            modes_nonzero = base_data[base_data["AverageCommuteTime"] > 0]["Main mode of commuting (21)"].unique()
+            selected_modes = list(modes_nonzero)
+
+    # Then set the "selected" flag:
+    base_data["selected"] = base_data["Main mode of commuting (21)"].isin(selected_modes)
+
     # Compute national weighted averages per mode.
     agg_national = (
         base_data.groupby("Main mode of commuting (21)")
         .apply(lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-               if g["TotalDuration"].sum() != 0 else None)
+            if g["TotalDuration"].sum() != 0 else None)
         .reset_index(name="nationalMean")
     )
-    
-    # Compute CD weighted averages if selected.
+
+    # Compute CD weighted averages if a Census Division is selected.
     if selected_cd:
         cd_data = base_data[base_data["GEO"] == selected_cd].copy()
         agg_cd = (
             cd_data.groupby("Main mode of commuting (21)")
             .apply(lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
-                   if g["TotalDuration"].sum() != 0 else None)
+                if g["TotalDuration"].sum() != 0 else None)
             .reset_index(name="cdMean")
         )
     else:
         agg_cd = pd.DataFrame(columns=["Main mode of commuting (21)", "cdMean"])
-    
+
     merged_data = pd.merge(base_data, agg_national, on="Main mode of commuting (21)", how="left")
     merged_data = pd.merge(merged_data, agg_cd, on="Main mode of commuting (21)", how="left")
-    
-    base_chart = alt.Chart(merged_data)
-    
+
     # Compute weighted density for the violin plot using gaussian_kde.
     density_list = []
     x_grid = np.linspace(0, 60, 200)
@@ -379,39 +407,62 @@ def update_charts(selected_cd, selected_modes, time_range):
         density_list.append(temp_df)
     if density_list:
         density_df = pd.concat(density_list, ignore_index=True)
+        # Add selected flag to density_df
+        density_df["selected"] = density_df["Main mode of commuting (21)"].isin(selected_modes)
     else:
-        density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density"])
-    
-    # Merge density_df with aggregated weighted averages.
+        density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density", "selected"])
+
     density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
     density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
-    
-    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", color="red", opacity=0.25).encode(
+    # Ensure the 'selected' column is present
+    density_merged["selected"] = density_merged["Main mode of commuting (21)"].isin(selected_modes)
+
+    # Create the weighted density area with conditional color encoding.
+    weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", opacity=0.25).encode(
         y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
-        x=alt.X("density:Q", stack="center", title=None, axis=None)
+        x=alt.X("density:Q", stack="center", title=None, axis=None),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("red"),   # normal color for selected modes
+            alt.value("grey")   # grey for unselected modes
+        )
     ).properties(width=100, height=400)
-    
-    # National weighted average (Canadian red horizontal rule).
-    national_rule = alt.Chart(density_merged).mark_rule(color="#FF3C3C", strokeWidth=5).encode(
+
+    # National weighted average (horizontal rule) with conditional color.
+    national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
         y=alt.Y("nationalMean:Q"),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("#FF3C3C"),
+            alt.value("grey")
+        ),
         tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+                alt.Tooltip("", type="nominal", title="")]
     )
-    
-    # CD weighted average (blue horizontal rule).
-    blue_rule = alt.Chart(density_merged).mark_rule(color="blue", strokeWidth=5).encode(
+
+    # CD weighted average (horizontal rule) with conditional color.
+    blue_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
         y=alt.Y("cdMean:Q"),
+        color=alt.condition(
+            alt.datum.selected,
+            alt.value("blue"),
+            alt.value("grey")
+        ),
         tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)"),
-         alt.Tooltip("", type="nominal", title="")]
+                alt.Tooltip("", type="nominal", title="")]
     )
-    
+
+    # Combine the density area and the horizontal rules, faceted by mode.
     final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
         column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
-    ).resolve_scale(x="independent") 
+    ).resolve_scale(x="independent")
+
+    # (The legend and subsequent chart configurations remain unchanged.)
+
 
     legend_data = pd.DataFrame({
-        "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
-        "Color": ["red", "blue"]
+        "Label": ["Average: Canada (min)", "Average: Selected CD (min)", "Unavailable"],
+        "Color": ["red", "blue", "grey"]
     })
 
     # Circles
@@ -499,13 +550,14 @@ def update_charts(selected_cd, selected_modes, time_range):
     
     # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
     # # Create a separate dataframe for the line chart that is not filtered by the time slider.
+        # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
     line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
     if selected_cd:
         line_df = line_df[line_df["GEO"] == selected_cd]
     if selected_modes and len(selected_modes) > 0:
         line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
-    # Exclude the summary row if present.
-    line_df = line_df[line_df["Time arriving at work (16)"] != "Total - Time arriving at work"]
+    # Filter based on the time slider range:
+    line_df = line_df[line_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t]).between(time_range[0], time_range[1], inclusive="left")]
     line_df_agg = line_df.groupby(["Time arriving at work (16)", "Main mode of commuting (21)"]).apply(
         lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
         if g["TotalDuration"].sum() != 0 else None
@@ -513,12 +565,38 @@ def update_charts(selected_cd, selected_modes, time_range):
 
     line_df_agg = line_df_agg[line_df_agg["weighted_avg"] != 0]
     
+    # Create a dictionary to map full labels to simplified labels.
+    simplified_labels = {
+        "Between 5 a.m. and 5:29 a.m.": "5am - 5:29am",
+        "Between 5:30 a.m. and 5:59 a.m.": "5:30am - 5:59am",
+        "Between 6 a.m. and 6:29 a.m.": "6am - 6:29am",
+        "Between 6:30 a.m. and 6:59 a.m.": "6:30am - 6:59am",
+        "Between 7 a.m. and 7:29 a.m.": "7am - 7:29am",
+        "Between 7:30 a.m. and 7:59 a.m.": "7:30am - 7:59am",
+        "Between 8 a.m. and 8:29 a.m.": "8am - 8:29am",
+        "Between 8:30 a.m. and 8:59 a.m.": "8:30am - 8:59am",
+        "Between 9 a.m. and 9:59 a.m.": "9am - 9:59am",
+        "Between 10 a.m. and 10:59 a.m.": "10am - 10:59am",
+        "Between 11 a.m. and 11:59 a.m.": "11am - 11:59am",
+        "Between 12 p.m. and 3:59 p.m.": "12pm - 3:59pm",
+        "Between 4 p.m. and 7:59 p.m.": "4pm - 7:59pm",
+        "Between 8 p.m. and 11:59 p.m.": "8pm - 11:59pm",
+        "Between 12 a.m. and 4:59 a.m.": "12am - 4:59am"
+    }
+
+    # Create a simplified order list that matches the original time_bins order.
+    simplified_time_bins = [simplified_labels[t] for t in time_bins]
+
+    # In your line chart data (line_df_agg), create a new column "TimeSimplified":
+    line_df_agg["TimeSimplified"] = line_df_agg["Time arriving at work (16)"].map(simplified_labels)
+
+    
     line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
-        x=alt.X("Time arriving at work (16):N", sort=list(time_bins), title="Time arriving at work"),
+        x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
         y=alt.Y("weighted_avg:Q", title="Average Commute Time (min)"),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
         tooltip=[
-            alt.Tooltip("Time arriving at work (16):N", title="Time"),
+            alt.Tooltip("TimeSimplified:N", title="Time"),
             alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
         ]
     ).properties(
@@ -531,6 +609,7 @@ def update_charts(selected_cd, selected_modes, time_range):
         titleFontSize=14,
         labelFontSize=13 
     )
+
     
     return fig_map, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
 
