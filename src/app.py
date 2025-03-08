@@ -17,6 +17,7 @@ from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
 from src.components.time_slider import create_time_slider
 from src.components.charts import create_choropleth, create_violin, create_bar, create_line
+from src.components.title_and_footer import create_title, create_footer
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -31,9 +32,6 @@ update_mode_callback(df, available_modes, dropdown_options)
 update_cd_callback(df, dropdown_cd_options)
 
 ### --- COMPONENTS ---
-
-title = html.H1("Commuting Insights Dashboard")
-
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
 mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
 time_slider_label, time_slider = create_time_slider(time_bins, slider_marks)
@@ -41,21 +39,8 @@ map_title, choropleth_map = create_choropleth()
 violin_title, violin_plot = create_violin()
 bar_title, bar_chart = create_bar()
 line_title, line_chart = create_line()
-
-footer = dbc.Container([
-    html.Hr(),
-    dbc.Row(dbc.Col(html.P("Commuting Insights is an interactive visualization dashboard for analyzing commuting patterns across Canadian Census Divisions. Users can explore commute times by mode of transport, time of day, and region. Commuting Insights aims to assist the Canadian Federal government in identifying trends for the purpose of informing national transportation funding strategies."), md=6)),
-    dbc.Row(dbc.Col(html.P("Created by:"))),
-    dbc.Row(dbc.Col(html.Ul([
-        html.Li(html.A("Francisco Ramirez", href="https://github.com/fraramfra", target="_blank")),
-        html.Li(html.A("Jinxiong (Eugene) You", href="https://github.com/jinxyou", target="_blank")),
-        html.Li(html.A("Derek Rodgers", href="https://github.com/derekrodgers", target="_blank")),
-        html.Li(html.A("Han Wang", href="https://github.com/hanwang205", target="_blank")),
-    ]))),
-    dbc.Row(dbc.Col(html.A("View on GitHub", href="https://github.com/UBC-MDS/DSCI-532_2025_28_commuting-insights", target="_blank", style={"font-weight": "bold"}))),
-    html.Br(),
-    dbc.Row(dbc.Col(html.P("Last updated: Saturday, 29 Feb 2025", style={"font-style": "italic"})))
-], fluid=True)
+title = create_title()
+footer = create_footer()
 
 ### --- LAYOUT ---
 
