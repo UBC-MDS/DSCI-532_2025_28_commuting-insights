@@ -14,6 +14,7 @@ from src.callbacks.update_mode import update_mode_callback
 from src.callbacks.update_cd import update_cd_callback
 from src.callbacks.update_charts import update_all_charts
 from src.components.cd_dropdown import create_cd_dropdown
+from src.components.mode_dropdown import create_mode_dropdown
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -32,15 +33,8 @@ update_cd_callback(df, dropdown_cd_options)
 title = html.H1("Commuting Insights Dashboard")
 
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
+mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
 
-mode_dropdown_label = dbc.Label("Commuting Mode")
-mode_dropdown = dcc.Dropdown(
-    id="mode-dropdown",
-    options=dropdown_options,
-    multi=True,
-    placeholder="Select one or more modes...",
-    searchable=True
-)
 time_slider_label = dbc.Label("Arrival Time")
 time_slider = dcc.RangeSlider(
     id="time-slider",
