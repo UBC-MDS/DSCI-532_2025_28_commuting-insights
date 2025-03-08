@@ -13,6 +13,7 @@ from src.data.preprocessing import load, widget_inputs
 from src.callbacks.update_mode import update_mode_callback
 from src.callbacks.update_cd import update_cd_callback
 from src.callbacks.update_charts import update_all_charts
+from src.components.cd_dropdown import create_cd_dropdown
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -29,14 +30,9 @@ update_cd_callback(df, dropdown_cd_options)
 ### --- COMPONENTS ---
 
 title = html.H1("Commuting Insights Dashboard")
-cd_dropdown_label = dbc.Label("Census Division (CD)")
-cd_dropdown = dcc.Dropdown(
-    id="cd-dropdown",
-    options=dropdown_cd_options,
-    multi=False,
-    placeholder="Select a Division...",
-    searchable=True
-)
+
+cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
+
 mode_dropdown_label = dbc.Label("Commuting Mode")
 mode_dropdown = dcc.Dropdown(
     id="mode-dropdown",
