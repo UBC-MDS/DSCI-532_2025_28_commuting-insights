@@ -15,6 +15,7 @@ from src.callbacks.update_cd import update_cd_callback
 from src.callbacks.update_charts import update_all_charts
 from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
+from src.components.time_slider import create_time_slider
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -34,18 +35,8 @@ title = html.H1("Commuting Insights Dashboard")
 
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
 mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
+time_slider_label, time_slider = create_time_slider(time_bins, slider_marks)
 
-time_slider_label = dbc.Label("Arrival Time")
-time_slider = dcc.RangeSlider(
-    id="time-slider",
-    min=0,
-    max=len(time_bins),
-    value=[0, len(time_bins)],
-    marks=slider_marks,
-    step=1,
-    allowCross=False,
-    pushable=1
-)
 
 map_title = html.H5("Average Commute Time by Census Division")
 choropleth_map = dcc.Graph(id="choropleth-map")
