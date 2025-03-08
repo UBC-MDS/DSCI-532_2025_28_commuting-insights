@@ -20,7 +20,6 @@ geojson_data, df = load("data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.ge
 available_modes, dropdown_options, available_cdnames, dropdown_cd_options, time_bins, time_bin_order, slider_marks = widget_inputs(df)
 
 ### --- INITIALIZATION ---
-alt.data_transformers.enable("vegafusion")
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
 server = app.server
 
