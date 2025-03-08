@@ -73,20 +73,13 @@ To run the app locally, you'll need to set up your environment with the required
 
 ### Running the Dashboard Locally
 
-1. After activating the environment, navigate to the `/src` folder:
+1. After activating the environment, from the root folder:
 
     ```bash
-    cd src
+    python -m src.app
     ```
 
-2. Run the dashboard:
-
-    ```bash
-    python app.py
-    ```
-
-
-3. Open your browser and paste the URL that appears in the terminal (it will typically start with `http://127.0.0.1:...`).
+2. Open your browser and paste the URL that appears in the terminal (it will typically start with `http://127.0.0.1:...`).
 
 ### Contributing to the Project
 We welcome contributions from anyone interested in improving the dashboard. If you would like to help us build features, fix bugs, or improve documentation, please take a look at the contributing guidelines.
