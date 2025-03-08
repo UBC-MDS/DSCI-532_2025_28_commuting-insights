@@ -12,13 +12,22 @@ The image below displays the state of the *Commuting Insights* app at the time o
 
 ### Implemented Features
 
-- Line plot for `Average Commute Time` vs `Time Arriving at Work`.
-- Addition of styling features such as using cards to contain widgets to define sample, adding padding to app, as well as updates to titles, labels, and axis. 
+In response to major instructor feedback:
+- Line plot for `Average Commute Time` vs `Time Arriving at Work`. 
+- Addition of styling features such as using cards to contain widgets to define sample, adding padding to app.
+
+In response to minor instructor feedback:
+- Discrepancies between displayed `Average Commute Time` and `Weighted Average Commute Time` have been resolved. "Weighted" labels have been removed.
+- Significant upates to bar plot:
+-- Removal of "Total" category
+-- Switched axis for improved readability.
+- Significant updates to violin plots
+-- Added legends, removing the need for descriptive text.
+- Slider widget constrained to main dashboard space.
+- Layout issues causing chart overlap have been fixed. This includes added padding between charts.
+- Updated preprocessing of dataset for improved performance and removal of unused examples.
 - Browser title bar displaying app name. 
 - Addition of footer with app description and relevant links.
-- Discrepancies between displayed `Average Commute Time` and `Weighted Average Commute Time` have been resolved.
-- Significant upates to bar plot and violin plots for interpretability (i.e. legends, axis swapping).
-- Updated preprocessing of dataset for improved performance and removal of unused examples.
 
 ### Missing Features
 
