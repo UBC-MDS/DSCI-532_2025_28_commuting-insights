@@ -19,10 +19,11 @@ In response to major instructor feedback:
 In response to minor instructor feedback:
 - Discrepancies between displayed `Average Commute Time` and `Weighted Average Commute Time` have been resolved. "Weighted" labels have been removed.
 - Significant updates to bar plot:
--- Removal of "Total" category
--- Switched axis for improved readability.
-- Significant updates to violin plots
--- Added legends, removing the need for descriptive text.
+  - Removal of "Total" category
+  - Switched axis for improved readability.
+- Significant updates to violin plots:
+  - Added legends.
+  - Removal of descriptive text.
 - Slider widget constrained to main dashboard space.
 - Layout issues causing chart overlap have been fixed. This includes added padding between charts.
 - Updated preprocessing of dataset for improved performance and removal of unused examples.
