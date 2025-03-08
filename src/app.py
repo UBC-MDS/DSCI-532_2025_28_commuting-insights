@@ -17,6 +17,7 @@ sys.path.append(parent_dir)
 
 from src.data.preprocessing import load, widget_inputs
 from src.callbacks.update_mode import update_mode_callback
+from src.callbacks.update_cd import update_cd_callback
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -29,22 +30,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Com
 server = app.server
 
 update_mode_callback(df, available_modes, dropdown_options)
-
-@app.callback(
-    Output("cd-dropdown", "options"),
-    [Input("mode-dropdown", "value")]
-)
-def update_cd_options(selected_modes):
-    # If no mode is selected, return all CD options.
-    if not selected_modes or len(selected_modes) == 0:
-        return dropdown_cd_options
-    # Filter the dataframe for selected modes with nonzero AverageCommuteTime.
-    df_modes = df[(df["Main mode of commuting (21)"].isin(selected_modes)) &
-                  (df["AverageCommuteTime"] > 0)]
-    unique_cds = df_modes["GEO"].unique()
-    # Sort the CDs for consistency
-    options = [{"label": cd, "value": cd} for cd in sorted(unique_cds)]
-    return options
+update_cd_callback(df, dropdown_cd_options)
 
 ### --- COMPONENTS ---
 
