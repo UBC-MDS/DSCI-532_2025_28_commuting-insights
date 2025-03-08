@@ -6,7 +6,7 @@ The following image displays the original proposal from Milestone 1:
 
 !["Dashboard - Milestone 1"](../img/sketch.png)
 
-The image below displays the current state of the *Commuting Insights* app relative to the status at the time of Milestone 2 delivery.
+The image below displays the state of the *Commuting Insights* app at the time of delivery of Milestone 3 relative to the Milestone 2 delivery.
 
 !["Dashboard - Milestone 3"](../img/sketch_m3.png)
 
