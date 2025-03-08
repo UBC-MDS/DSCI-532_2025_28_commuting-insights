@@ -16,6 +16,7 @@ from src.callbacks.update_charts import update_all_charts
 from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
 from src.components.time_slider import create_time_slider
+from src.components.charts import create_choropleth, create_violin, create_bar, create_line
 
 ### --- LOAD AND PREPROCESS DATA ---
 
@@ -36,19 +37,10 @@ title = html.H1("Commuting Insights Dashboard")
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
 mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
 time_slider_label, time_slider = create_time_slider(time_bins, slider_marks)
-
-
-map_title = html.H5("Average Commute Time by Census Division")
-choropleth_map = dcc.Graph(id="choropleth-map")
-
-violin_title = html.H5("Commute Times by Mode, Selected Census Division vs. Canada")
-violin_plot = dvc.Vega(id="altair-violin-plot")
-
-bar_title = html.H5("Commute Duration Distribution")
-bar_chart = dvc.Vega(id="altair-bar-chart")
-
-line_title = html.H5("Average Commute Time by Time of Day")
-line_chart = dvc.Vega(id="altair-line-chart")
+map_title, choropleth_map = create_choropleth()
+violin_title, violin_plot = create_violin()
+bar_title, bar_chart = create_bar()
+line_title, line_chart = create_line()
 
 footer = dbc.Container([
     html.Hr(),
