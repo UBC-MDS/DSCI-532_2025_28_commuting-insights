@@ -123,6 +123,7 @@ point_labels = {
 slider_marks = {i: point_labels[time_bins[i]] for i in range(len(time_bins))}
 slider_marks[len(time_bins)] = "5am"  # Extra mark for the right endpoint
 
+
 ### --- INITIALIZATION ---
 alt.data_transformers.enable("vegafusion")
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
@@ -144,6 +145,21 @@ def update_mode_options(selected_cd):
     options = [{"label": m, "value": m} for m in valid_modes]
     return options
 
+@app.callback(
+    Output("cd-dropdown", "options"),
+    [Input("mode-dropdown", "value")]
+)
+def update_cd_options(selected_modes):
+    # If no mode is selected, return all CD options.
+    if not selected_modes or len(selected_modes) == 0:
+        return dropdown_cd_options
+    # Filter the dataframe for selected modes with nonzero AverageCommuteTime.
+    df_modes = df[(df["Main mode of commuting (21)"].isin(selected_modes)) &
+                  (df["AverageCommuteTime"] > 0)]
+    unique_cds = df_modes["GEO"].unique()
+    # Sort the CDs for consistency
+    options = [{"label": cd, "value": cd} for cd in sorted(unique_cds)]
+    return options
 
 ### --- COMPONENTS ---
 
@@ -548,12 +564,38 @@ def update_charts(selected_cd, selected_modes, time_range):
 
     line_df_agg = line_df_agg[line_df_agg["weighted_avg"] != 0]
     
+    # Create a dictionary to map full labels to simplified labels.
+    simplified_labels = {
+        "Between 5 a.m. and 5:29 a.m.": "5am - 5:29am",
+        "Between 5:30 a.m. and 5:59 a.m.": "5:30am - 5:59am",
+        "Between 6 a.m. and 6:29 a.m.": "6am - 6:29am",
+        "Between 6:30 a.m. and 6:59 a.m.": "6:30am - 6:59am",
+        "Between 7 a.m. and 7:29 a.m.": "7am - 7:29am",
+        "Between 7:30 a.m. and 7:59 a.m.": "7:30am - 7:59am",
+        "Between 8 a.m. and 8:29 a.m.": "8am - 8:29am",
+        "Between 8:30 a.m. and 8:59 a.m.": "8:30am - 8:59am",
+        "Between 9 a.m. and 9:59 a.m.": "9am - 9:59am",
+        "Between 10 a.m. and 10:59 a.m.": "10am - 10:59am",
+        "Between 11 a.m. and 11:59 a.m.": "11am - 11:59am",
+        "Between 12 p.m. and 3:59 p.m.": "12pm - 3:59pm",
+        "Between 4 p.m. and 7:59 p.m.": "4pm - 7:59pm",
+        "Between 8 p.m. and 11:59 p.m.": "8pm - 11:59pm",
+        "Between 12 a.m. and 4:59 a.m.": "12am - 4:59am"
+    }
+
+    # Create a simplified order list that matches the original time_bins order.
+    simplified_time_bins = [simplified_labels[t] for t in time_bins]
+
+    # In your line chart data (line_df_agg), create a new column "TimeSimplified":
+    line_df_agg["TimeSimplified"] = line_df_agg["Time arriving at work (16)"].map(simplified_labels)
+
+    
     line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
-        x=alt.X("Time arriving at work (16):N", sort=list(time_bins), title="Time arriving at work"),
+        x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
         y=alt.Y("weighted_avg:Q", title="Average Commute Time (min)"),
         color=alt.Color("Main mode of commuting (21):N", title="Mode"),
         tooltip=[
-            alt.Tooltip("Time arriving at work (16):N", title="Time"),
+            alt.Tooltip("TimeSimplified:N", title="Time"),
             alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
         ]
     ).properties(
@@ -566,6 +608,7 @@ def update_charts(selected_cd, selected_modes, time_range):
         titleFontSize=14,
         labelFontSize=13 
     )
+
     
     return fig_map, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
 
