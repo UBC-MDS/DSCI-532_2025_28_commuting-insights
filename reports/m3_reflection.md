@@ -43,8 +43,7 @@ These changes have minimal impact on the app's intended purpose while reducing c
 ### Issues
 
 - While the dashboard deployment is fully functional, it experiences performance issues on the `render.com` platform, causing slower display times.
-- The X-Axis on line plot does not filter based on slider widget.
-- Color scale on choroplet is based on filtered sample and should be fixed to be based on full dataset range.
+- Color scale on choropleth is based on filtered sample and should be fixed to be based on full dataset range.
 
 ### Best Practice Deviations 
 
