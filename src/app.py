@@ -25,13 +25,12 @@ geojson_data, df = load("data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.ge
 available_modes, dropdown_options, available_cdnames, dropdown_cd_options, time_bins, time_bin_order, slider_marks = widget_inputs(df)
 
 ### --- INITIALIZATION ---
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
 server = app.server
 
-update_mode_callback(df, available_modes, dropdown_options)
-update_cd_callback(df, dropdown_cd_options)
-
 ### --- COMPONENTS ---
+
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
 mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
 time_slider_label, time_slider = create_time_slider(time_bins, slider_marks)
@@ -94,6 +93,8 @@ app.layout = dbc.Container([
 
 ### --- CALLBACKS ---
 
+update_mode_callback(df, available_modes, dropdown_options)
+update_cd_callback(df, dropdown_cd_options)
 update_all_charts(df, time_bins, time_bin_order, geojson_data)
 
 ### --- RUN THE APP ---
