@@ -18,7 +18,7 @@ In response to major instructor feedback:
 
 In response to minor instructor feedback:
 - Discrepancies between displayed `Average Commute Time` and `Weighted Average Commute Time` have been resolved. "Weighted" labels have been removed.
-- Significant upates to bar plot:
+- Significant updates to bar plot:
 -- Removal of "Total" category
 -- Switched axis for improved readability.
 - Significant updates to violin plots
@@ -35,17 +35,19 @@ In response to minor instructor feedback:
 
 ### Changes to proposal
 
-- Scatter plot for `Average Commute Time` vs `Total Commute Observations`, while present in the Original sketch and Milestone 2's missing features, has been removed from plan given its redundancy with the information contained in other plots.
+- Scatter plot for `Average Commute Time` vs `Total Commute Observations`, while it was present in the original sketch and in the missing features of Milestone 2, has been removed from plan given its redundancy with the information contained in other plots.
 
 These changes have minimal impact on the app's intended purpose while reducing code complexity and visual clutter.
 
 ### Issues
 
 - While the app deployment is fully functional, it experiences performance issues on the `render.com` platform, causing slower display times.
+- The X-Axis on line plot does not filter based on slider widget.
+- Color scale on choroplet is based on filtered sample and should be fixed to be based on full dataset range.
 
 ### Best Practice Deviations 
 
-- None identified.
+- The X-Axis labels on line plot could be improved for readability. 
 
 ### Summary
 
