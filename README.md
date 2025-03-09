@@ -19,11 +19,11 @@ By using this dashboard, you'll be able to explore:
 
 The dashboard features:
 
-- **Average Commute Time by Census Division:** View the average commute time for different regions across Canada, allowing you to compare data at the regional level.
+- **Average Commute Time by Census Division:** View the average commute time for different regions across Canada, allowing you to compare data at the regional level. This is visualized using an interactive map, where census divisions are color-coded by average commute time.
 
-- **Commute Duration Distribution:** Visualize the count of commute observations categorized by duration (e.g., less than 15 minutes, 15 to 29 minutes, etc.), providing insights into how long Canadians are spending commuting at different times of the day.
+- **Commute Duration Distribution:** Visualize the count of commute observations categorized by duration (e.g., less than 15 minutes, 15 to 29 minutes, etc.), providing insights into how long Canadians are spending commuting at different times of the day.This feature offers a clear, interactive bar chart with commuting categories and counts by mode.
 
-- **Commute Times by Mode, Current Division vs. Canada:** Compare commute times for different modes of transportation (e.g., cars, bicycles, public transit) in a selected census division versus the national averages. This feature helps identify unique regional trends and challenges.
+- **Commute Times by Mode, Current Division vs. Canada:** Compare commute times for different modes of transportation (e.g., cars, bicycles, public transit) in a selected census division versus the national averages. This feature helps identify unique regional trends and challenges.This feature helps identify unique regional trends and challenges with an intuitive violin plot, showing the distribution of commute times by mo
 
 - **Average Commute Time by Time of Day:** Examine how commute times vary by the time people arrive at work throughout the day. This time-of-day analysis helps reveal patterns and shifts in transportation behavior.
 
