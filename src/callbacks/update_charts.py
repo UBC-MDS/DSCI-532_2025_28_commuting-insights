@@ -243,6 +243,8 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         bar_data = base_data.copy()
         if selected_cd:
             bar_data = bar_data[bar_data["GEO"] == selected_cd]
+        if selected_modes and len(selected_modes) > 0:
+            bar_data = bar_data[bar_data["Main mode of commuting (21)"].isin(selected_modes)]
         bar_data = bar_data[["Main mode of commuting (21)", "Less15", "15to29", "30to44", "45to59", "60plus"]].copy()
         bar_data = bar_data.melt(id_vars=["Main mode of commuting (21)"],
                                 value_vars=["Less15", "15to29", "30to44", "45to59", "60plus"],
