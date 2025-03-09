@@ -25,6 +25,8 @@ The dashboard features:
 
 - **Commute Times by Mode, Current Division vs. Canada:** Compare commute times for different modes of transportation (e.g., cars, bicycles, public transit) in a selected census division versus the national averages. This feature helps identify unique regional trends and challenges.
 
+- **Average Commute Time by Time of Day:** Examine how commute times vary by the time people arrive at work throughout the day. This time-of-day analysis helps reveal patterns and shifts in transportation behavior.
+
 This tool can be incredibly useful for policymakers, urban planners, and individuals interested in understanding the state of transportation across Canada.
 
 **[View the live dashboard here](https://dsci-532-2025-28-commuting-insights.onrender.com/)**
