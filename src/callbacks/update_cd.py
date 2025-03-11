@@ -20,9 +20,9 @@ def update_cd_callback(df, dropdown_cd_options):
                                       (filtered_df["AverageCommuteTime"] > 0)]
 
         # Get unique Census Divisions (GEO) after filtering
-        unique_cds = filtered_df["GEO"].unique()
+        # unique_cds = filtered_df["GEO"].unique()
         
         # Sort for consistency
-        options = [{"label": cd, "value": cd} for cd in sorted(unique_cds)]
+        options = [{"label": row["GEO"], "value": row["DGUID"]} for _, row in filtered_df[["GEO", "DGUID"]].drop_duplicates().iterrows()]
         
         return options

@@ -26,7 +26,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
 
         # Start with all data and filter by Census Division and time range.
         map_df = df.copy()
-
+        print(selected_cd)
         if selected_province:
             map_df = map_df[map_df["DGUID"].astype(str).str.startswith(selected_province)]
 
@@ -41,12 +41,14 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             .between(time_range[0], time_range[1], inclusive="left")
         ]
         map_df = map_df.dropna(subset=["AverageCommuteTime", "TotalDuration"])
-        
+        # print(map_df)
         # Group by division (using both DGUID and GEO) and compute the weighted average.
         agg_df = map_df.groupby(["DGUID", "GEO"]).apply(
             lambda g: np.average(g["AverageCommuteTime"], weights=g["TotalDuration"])
             if g["TotalDuration"].sum() > 0 else np.nan
         ).reset_index(name="WeightedAverageCommute")
+        
+        
         
         # --- Merge aggregated data into the GeoJSON ---
         # Create a dict: key = DGUID, value = WeightedAverageCommute
@@ -85,7 +87,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
 
         if selected_cd:
-            base_data["is_subset"] = base_data["GEO"] == selected_cd
+            base_data["is_subset"] = base_data["DGUID"] == selected_cd
         else:
             base_data["is_subset"] = False
         
@@ -95,7 +97,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             if selected_cd:
                 # Highlight only modes that have nonzero AverageCommuteTime in the chosen CD
                 modes_in_cd = base_data[
-                    (base_data["GEO"] == selected_cd) & (base_data["AverageCommuteTime"] > 0)
+                    (base_data["DGUID"] == selected_cd) & (base_data["AverageCommuteTime"] > 0)
                 ]["Main mode of commuting (21)"].unique()
                 selected_modes = list(modes_in_cd)
             else:
@@ -116,7 +118,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
 
         # Compute CD weighted averages if a Census Division is selected.
         if selected_cd:
-            cd_data = base_data[base_data["GEO"] == selected_cd].copy()
+            cd_data = base_data[base_data["DGUID"] == selected_cd].copy()
             agg_cd = (
                 cd_data.groupby("Main mode of commuting (21)")
                 .apply(lambda g: (g["AverageCommuteTime"] * g["TotalDuration"]).sum() / g["TotalDuration"].sum()
@@ -247,7 +249,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         # Use the same filtered data (base_data) and melt the five duration columns.
         bar_data = base_data.copy()
         if selected_cd:
-            bar_data = bar_data[bar_data["GEO"] == selected_cd]
+            bar_data = bar_data[bar_data["DGUID"] == selected_cd]
         if selected_modes and len(selected_modes) > 0:
             bar_data = bar_data[bar_data["Main mode of commuting (21)"].isin(selected_modes)]
         bar_data = bar_data[["Main mode of commuting (21)", "Less15", "15to29", "30to44", "45to59", "60plus"]].copy()
@@ -298,7 +300,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
         line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
         if selected_cd:
-            line_df = line_df[line_df["GEO"] == selected_cd]
+            line_df = line_df[line_df["DGUID"] == selected_cd]
         if selected_modes and len(selected_modes) > 0:
             line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
         # Filter based on the time slider range:
