@@ -50,14 +50,17 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         
         # --- Merge aggregated data into the GeoJSON ---
         # Create a dict: key = DGUID, value = WeightedAverageCommute
-        agg_dict = agg_df.set_index("DGUID")["WeightedAverageCommute"].to_dict()
+        agg_dict = agg_df.set_index("DGUID")[["GEO", "WeightedAverageCommute"]].to_dict(orient="index")
         # For each feature, update properties with the aggregated value (if available)
         for feature in geojson_data["features"]:
             dguid = feature["properties"].get("DGUID")
+
             if dguid in agg_dict:
-                feature["properties"]["WeightedAverageCommute"] = agg_dict[dguid]
+                feature["properties"]["WeightedAverageCommute"] = agg_dict[dguid]["WeightedAverageCommute"]
+                feature["properties"]["GEO"] = agg_dict[dguid]["GEO"]  # Add GEO name
             else:
                 feature["properties"]["WeightedAverageCommute"] = None
+                feature["properties"]["GEO"] = None  # Default to None if not found
         
         # --- Build Altair Geoshape Chart for the Map ---
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
@@ -73,7 +76,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         ).project(
             type="transverseMercator",
             rotate=[90, 0, 0]
-        ).properties(width=800, height=500)
+        ).properties(width="container", height=600)
 
         # Convert the Altair chart to a Vega spec dictionary.
         spec = map_chart.to_dict(format="vega")
