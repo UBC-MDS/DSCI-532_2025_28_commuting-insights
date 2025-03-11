@@ -77,57 +77,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             type="transverseMercator",
             rotate=[90, 0, 0]
         ).properties(width="container", height=600)
-
-        # Convert the Altair chart to a Vega spec dictionary.
-        spec = map_chart.to_dict(format="vega")
-
-        # Ensure the signals array exists.
-        if "signals" not in spec:
-            spec["signals"] = []
-
-        # Add a zoom signal triggered by mouse wheel events.
-        spec["signals"].append({
-            "name": "zoom",
-            "value": 400,  # initial scale value; adjust as needed
-            "on": [{
-                "events": {"type": "wheel", "consume": True},
-                "update": "clamp(zoom * pow(1.001, -event.deltaY), 100, 2000)"
-            }]
-        })
-
-        # Add pan signals (for translation). We'll use tx and ty as the x and y translation.
-        spec["signals"].append({
-            "name": "tx",
-            "value": 400,  # initial x translation; adjust as needed
-            "on": [{
-                "events": {"type": "drag", "filter": "event.item && event.item.mark.name === 'geoshape'"},
-                "update": "tx + event.dx"
-            }]
-        })
-        spec["signals"].append({
-            "name": "ty",
-            "value": 300,  # initial y translation; adjust as needed
-            "on": [{
-                "events": {"type": "drag", "filter": "event.item && event.item.mark.name === 'geoshape'"},
-                "update": "ty + event.dy"
-            }]
-        })
-
-        # Update the projection to use these signals.
-        if "projection" in spec:
-            spec["projection"]["scale"] = {"signal": "zoom"}
-            spec["projection"]["translate"] = [{"signal": "tx"}, {"signal": "ty"}]
-        else:
-            spec["projection"] = {
-                "type": "mercator",
-                "scale": {"signal": "zoom"},
-                "translate": [{"signal": "tx"}, {"signal": "ty"}]
-            }
-
-        # Now, instead of returning map_chart.to_dict(format="vega"),
-        # return our modified spec.
-        map_chart_spec = spec
-
+       
         
         # ---- Altair Violin Plot with Weighted Horizontal Rules ----
         base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
@@ -405,4 +355,4 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             labelFontSize=13 
         )
         
-        return map_chart_spec, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+        return map_chart.to_dict(format="vega"), final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
