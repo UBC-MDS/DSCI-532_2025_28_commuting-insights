@@ -4,16 +4,25 @@ def update_cd_callback(df, dropdown_cd_options):
 
     @callback(
         Output("cd-dropdown", "options"),
-        [Input("mode-dropdown", "value")]
+        [Input("mode-dropdown", "value"), Input("province-dropdown", "value")]  # Added province input
     )
-    def update_cd_options(selected_modes):
-        # If no mode is selected, return all CD options.
-        if not selected_modes or len(selected_modes) == 0:
-            return dropdown_cd_options
-        # Filter the dataframe for selected modes with nonzero AverageCommuteTime.
-        df_modes = df[(df["Main mode of commuting (21)"].isin(selected_modes)) &
-                    (df["AverageCommuteTime"] > 0)]
-        unique_cds = df_modes["GEO"].unique()
-        # Sort the CDs for consistency
+    def update_cd_options(selected_modes, selected_province):
+        # Start with the full dataframe
+        filtered_df = df.copy()
+
+        # Filter by province if selected
+        if selected_province:
+            filtered_df = filtered_df[filtered_df["DGUID"].astype(str).str.startswith(selected_province)]
+
+        # Filter by selected modes if any
+        if selected_modes and len(selected_modes) > 0:
+            filtered_df = filtered_df[(filtered_df["Main mode of commuting (21)"].isin(selected_modes)) & 
+                                      (filtered_df["AverageCommuteTime"] > 0)]
+
+        # Get unique Census Divisions (GEO) after filtering
+        unique_cds = filtered_df["GEO"].unique()
+        
+        # Sort for consistency
         options = [{"label": cd, "value": cd} for cd in sorted(unique_cds)]
+        
         return options

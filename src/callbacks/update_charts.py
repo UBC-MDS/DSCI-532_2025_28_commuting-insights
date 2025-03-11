@@ -9,70 +9,122 @@ alt.data_transformers.enable("vegafusion")
 def update_all_charts(df, time_bins, time_bin_order, geojson_data):
     @callback(
         [
-            Output("choropleth-map", "figure"),
+            Output("choropleth-map", "spec"),   
             Output("altair-violin-plot", "spec"),
             Output("altair-bar-chart", "spec"),
             Output("altair-line-chart", "spec")
         ],
         [
+            Input("province-dropdown", "value"),
             Input("cd-dropdown", "value"),
             Input("mode-dropdown", "value"),
             Input("time-slider", "value")
         ]
     )
+    def update_charts(selected_province, selected_cd, selected_modes, time_range):
+        # ---- Choropleth Map Data Processing ----
 
-    def update_charts(selected_cd, selected_modes, time_range):
-        # ---- Choropleth Map ----
         # Start with all data and filter by Census Division and time range.
         map_df = df.copy()
 
-        # Filter by Census Division if selected.
+        if selected_province:
+            map_df = map_df[map_df["DGUID"].astype(str).str.startswith(selected_province)]
+
         if selected_cd:
-            map_df = map_df[map_df["GEO"] == selected_cd]
+            map_df = map_df[map_df["DGUID"] == selected_cd]
         if selected_modes and len(selected_modes) > 0:
             map_df = map_df[map_df["Main mode of commuting (21)"].isin(selected_modes)]
-
-        # Ensure only valid time bins are used and apply the time range filter.
         map_df = map_df[map_df["Time arriving at work (16)"].isin(time_bin_order.keys())]
         map_df = map_df[
             map_df["Time arriving at work (16)"]
             .apply(lambda t: time_bin_order[t])
             .between(time_range[0], time_range[1], inclusive="left")
         ]
-        
-        # Remove rows with missing numeric values.
         map_df = map_df.dropna(subset=["AverageCommuteTime", "TotalDuration"])
-
+        
         # Group by division (using both DGUID and GEO) and compute the weighted average.
         agg_df = map_df.groupby(["DGUID", "GEO"]).apply(
             lambda g: np.average(g["AverageCommuteTime"], weights=g["TotalDuration"])
             if g["TotalDuration"].sum() > 0 else np.nan
         ).reset_index(name="WeightedAverageCommute")
+        
+        # --- Merge aggregated data into the GeoJSON ---
+        # Create a dict: key = DGUID, value = WeightedAverageCommute
+        agg_dict = agg_df.set_index("DGUID")["WeightedAverageCommute"].to_dict()
+        # For each feature, update properties with the aggregated value (if available)
+        for feature in geojson_data["features"]:
+            dguid = feature["properties"].get("DGUID")
+            if dguid in agg_dict:
+                feature["properties"]["WeightedAverageCommute"] = agg_dict[dguid]
+            else:
+                feature["properties"]["WeightedAverageCommute"] = None
+        
+        # --- Build Altair Geoshape Chart for the Map ---
+        map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
+            stroke="black"
+        ).encode(
+            color=alt.Color("properties.WeightedAverageCommute:Q",
+                            scale=alt.Scale(scheme="orangered"),
+                            title="Avg Commute (min)"),
+            tooltip=[
+                alt.Tooltip("properties.GEO:N", title="Division"),
+                alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (min)")
+            ]
+        ).project(
+            type="transverseMercator",
+            rotate=[90, 0, 0]
+        ).properties(width=800, height=500)
 
-        # Create the choropleth map with the aggregated weighted averages.
-        fig_map = px.choropleth_map(
-            agg_df,
-            geojson=geojson_data,
-            locations="DGUID",
-            featureidkey="properties.DGUID",
-            color="WeightedAverageCommute",
-            color_continuous_scale="OrRd",
-            hover_name="GEO",
-            custom_data=["WeightedAverageCommute"],
-            map_style="open-street-map",
-            center={"lat": 56, "lon": -106},
-            zoom=3,
-            opacity=0.7,
-        )
-        fig_map.update_traces(marker_line_width=1.5, marker_line_color="black", showscale=True)
-        fig_map.update_traces(
-            hovertemplate="<b>%{hovertext}</b><br /><br />Average, currrent filters: %{customdata[0]:.1f} min<extra></extra>"
-        )
-        fig_map.update_layout(
-            coloraxis_colorbar_title="Minutes",
-            margin={"r": 0, "t": 0, "l": 0, "b": 70},
-            height=488
-        )
+        # Convert the Altair chart to a Vega spec dictionary.
+        spec = map_chart.to_dict(format="vega")
+
+        # Ensure the signals array exists.
+        if "signals" not in spec:
+            spec["signals"] = []
+
+        # Add a zoom signal triggered by mouse wheel events.
+        spec["signals"].append({
+            "name": "zoom",
+            "value": 400,  # initial scale value; adjust as needed
+            "on": [{
+                "events": {"type": "wheel", "consume": True},
+                "update": "clamp(zoom * pow(1.001, -event.deltaY), 100, 2000)"
+            }]
+        })
+
+        # Add pan signals (for translation). We'll use tx and ty as the x and y translation.
+        spec["signals"].append({
+            "name": "tx",
+            "value": 400,  # initial x translation; adjust as needed
+            "on": [{
+                "events": {"type": "drag", "filter": "event.item && event.item.mark.name === 'geoshape'"},
+                "update": "tx + event.dx"
+            }]
+        })
+        spec["signals"].append({
+            "name": "ty",
+            "value": 300,  # initial y translation; adjust as needed
+            "on": [{
+                "events": {"type": "drag", "filter": "event.item && event.item.mark.name === 'geoshape'"},
+                "update": "ty + event.dy"
+            }]
+        })
+
+        # Update the projection to use these signals.
+        if "projection" in spec:
+            spec["projection"]["scale"] = {"signal": "zoom"}
+            spec["projection"]["translate"] = [{"signal": "tx"}, {"signal": "ty"}]
+        else:
+            spec["projection"] = {
+                "type": "mercator",
+                "scale": {"signal": "zoom"},
+                "translate": [{"signal": "tx"}, {"signal": "ty"}]
+            }
+
+        # Now, instead of returning map_chart.to_dict(format="vega"),
+        # return our modified spec.
+        map_chart_spec = spec
+
         
         # ---- Altair Violin Plot with Weighted Horizontal Rules ----
         base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
@@ -275,6 +327,8 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
                 alt.Tooltip("DurationCategory:N", title="Duration Category"),
                 alt.Tooltip("Count:Q", format=",.0f")
             ]
+        ).add_selection(
+            alt.selection_interval(bind='scales')
         ).properties(
             width="container",
             height=425
@@ -348,4 +402,4 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             labelFontSize=13 
         )
         
-        return fig_map, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+        return map_chart_spec, final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
