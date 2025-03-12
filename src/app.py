@@ -1,10 +1,12 @@
 import dash
 import dash_bootstrap_components as dbc
 import dash_vega_components as dvc
-from dash import dcc, html, Input, Output
+from dash import dcc, html, Input, Output, callback, State
 import altair as alt
 import os
 import sys
+import numpy as np
+import pandas as pd
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(parent_dir)
@@ -71,7 +73,7 @@ app.layout = dbc.Container([
         ), className="mt-3"
     ),
     html.Br(),
-    
+    dcc.Store(id="preprocessed-data"),
     # First Chart Row - With Left & Right Padding
     dbc.Row([
         dbc.Col([
@@ -105,6 +107,7 @@ update_mode_callback(df, available_modes, dropdown_options)
 update_cd_callback(df, dropdown_cd_options)
 update_choropleth_callback(df, time_bin_order, geojson_data)
 update_all_charts(df, time_bins, time_bin_order, geojson_data)
+
 
 
 ### --- RUN THE APP ---

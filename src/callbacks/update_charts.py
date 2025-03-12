@@ -15,15 +15,14 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         ],
         [
             Input("province-dropdown", "value"),
-            # Input("cd-dropdown", "value"),
+            Input("cd-dropdown", "value"),
             Input("choropleth-map", "signalData"),
             Input("mode-dropdown", "value"),
             Input("time-slider", "value")
         ]
     )
-    def update_charts(selected_province, signalData, selected_modes, time_range):
+    def update_charts(selected_province, selected_cd, signalData, selected_modes, time_range):
         # ---- Choropleth Map Data Processing ----
-        selected_cd = None
         if signalData and 'select_region' in signalData and 'properties\\.DGUID' in signalData['select_region']:
             selected_cd = signalData['select_region']['properties\\.DGUID'][0]
         

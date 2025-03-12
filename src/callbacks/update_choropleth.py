@@ -1,64 +1,77 @@
-from dash import Input, Output, callback
+from dash import Input, Output, callback, State
 import altair as alt
 import pandas as pd
 import plotly.express as px
 import numpy as np
 from scipy.stats import gaussian_kde
+import dash
 alt.data_transformers.enable("vegafusion")
 
 def update_choropleth_callback(df, time_bin_order, geojson_data):
     @callback(
-        [
-            Output("choropleth-map", "spec")
-        ],
-        [
-            Input("province-dropdown", "value"),
-            # Input("cd-dropdown", "value"),
-            Input("mode-dropdown", "value"),
-            Input("time-slider", "value")
-        ]
+        Output("preprocessed-data", "data"),  # Store precomputed values
+        Input("province-dropdown", "value"),
+        Input("mode-dropdown", "value"),
+        Input("time-slider", "value"),
     )
-    def update_choropleth(selected_province, selected_modes, time_range):
-        # Start with all data and filter by Census Division and time range.
+    def preprocess_data(selected_province, selected_modes, time_range):
+        """Preprocess data once and store in a Dash Store component."""
         map_df = df.copy()
+
+        # Apply filters efficiently
         if selected_province:
             map_df = map_df[map_df["DGUID"].astype(str).str.startswith(selected_province)]
-
-        # if selected_cd:
-        #     map_df = map_df[map_df["DGUID"] == selected_cd]
-        if selected_modes and len(selected_modes) > 0:
+        if selected_modes:
             map_df = map_df[map_df["Main mode of commuting (21)"].isin(selected_modes)]
-        map_df = map_df[map_df["Time arriving at work (16)"].isin(time_bin_order.keys())]
+        
+        # Convert time ranges to numerical format
         map_df = map_df[
-            map_df["Time arriving at work (16)"]
-            .apply(lambda t: time_bin_order[t])
+            map_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
             .between(time_range[0], time_range[1], inclusive="left")
         ]
+
+        # Drop NaNs to avoid errors
         map_df = map_df.dropna(subset=["AverageCommuteTime", "TotalDuration"])
-        # Group by division (using both DGUID and GEO) and compute the weighted average.
+
+        # Compute weighted average commute time
         agg_df = map_df.groupby(["DGUID", "GEO"]).apply(
             lambda g: np.average(g["AverageCommuteTime"], weights=g["TotalDuration"])
             if g["TotalDuration"].sum() > 0 else np.nan
         ).reset_index(name="WeightedAverageCommute")
-        
-        
-        
-        # --- Merge aggregated data into the GeoJSON ---
-        # Create a dict: key = DGUID, value = WeightedAverageCommute
+
+        # Store as JSON for fast retrieval
+        return agg_df.to_json(date_format="iso", orient="split")
+
+    @callback(
+        Output("choropleth-map", "spec"),
+        Input("preprocessed-data", "data"),
+        Input("cd-dropdown", "value"),
+        State("choropleth-map", "spec"),
+    )
+    def update_choropleth(preprocessed_json, selected_cd, current_map):
+        """Update choropleth visualization efficiently using precomputed data."""
+        if preprocessed_json is None:
+            return dash.no_update  # Prevent updates if no data
+
+        # Convert JSON back to DataFrame
+        agg_df = pd.read_json(preprocessed_json, orient="split")
+
+        # Merge with GeoJSON features
         agg_dict = agg_df.set_index("DGUID")[["GEO", "WeightedAverageCommute"]].to_dict(orient="index")
-        # For each feature, update properties with the aggregated value (if available)
         for feature in geojson_data["features"]:
             dguid = feature["properties"].get("DGUID")
+            feature["properties"]["WeightedAverageCommute"] = agg_dict.get(dguid, {}).get("WeightedAverageCommute", None)
+            feature["properties"]["GEO"] = agg_dict.get(dguid, {}).get("GEO", None)
 
-            if dguid in agg_dict:
-                feature["properties"]["WeightedAverageCommute"] = agg_dict[dguid]["WeightedAverageCommute"]
-                feature["properties"]["GEO"] = agg_dict[dguid]["GEO"]  # Add GEO name
-            else:
-                feature["properties"]["WeightedAverageCommute"] = None
-                feature["properties"]["GEO"] = None  # Default to None if not found
-        
-        # --- Build Altair Geoshape Chart for the Map ---
+        # --- Build Altair Geoshape Chart ---
         select_region = alt.selection_point(fields=['properties.DGUID'], name='select_region')
+
+        highlight_condition = (
+            alt.condition(
+                alt.datum["properties.DGUID"] == selected_cd, alt.value(1), alt.value(0.5)
+            ) if selected_cd else alt.value(0.5)
+        )
+
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
             stroke="black"
         ).encode(
@@ -69,13 +82,25 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
                 alt.Tooltip("properties.GEO:N", title="Division"),
                 alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (min)"),
             ],
-            opacity=alt.condition(select_region, alt.value(0.9), alt.value(0.3))
+            opacity=highlight_condition
         ).add_params(
             select_region
-    )   .project(
+        ).project(
             type="transverseMercator",
             rotate=[90, 0, 0]
         ).properties(width="container", height=600)
 
-        print(select_region)
-        return [map_chart.to_dict(format="vega")]  # Return must be a tuple or list
+        return map_chart.to_dict(format="vega")
+
+    @callback(
+        Output("cd-dropdown", "value"),
+        Input("choropleth-map", "signalData"),
+        State("cd-dropdown", "value"),
+    )
+    def update_dropdown_from_map(signalData, current_dropdown):
+        """Update dropdown when user selects a region on the map."""
+        if signalData and 'select_region' in signalData and 'properties\\.DGUID' in signalData['select_region']:
+            selected_cd = signalData['select_region']['properties\\.DGUID'][0]
+            if selected_cd != current_dropdown:  # Avoid unnecessary updates
+                return selected_cd
+        return dash.no_update  # No change needed
