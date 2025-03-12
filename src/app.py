@@ -13,7 +13,7 @@ from src.data.preprocessing import load, widget_inputs
 from src.callbacks.update_mode import update_mode_callback
 from src.callbacks.update_cd import update_cd_callback
 from src.callbacks.update_charts import update_all_charts
-# from src.callbacks.update_province import update_province_callback  
+from src.callbacks.update_choropleth import update_choropleth_callback  
 from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
 from src.components.province_dropdown import create_province_dropdown  
@@ -103,7 +103,9 @@ app.layout = dbc.Container([
 
 update_mode_callback(df, available_modes, dropdown_options)
 update_cd_callback(df, dropdown_cd_options)
+update_choropleth_callback(df, time_bin_order, geojson_data)
 update_all_charts(df, time_bins, time_bin_order, geojson_data)
+
 
 ### --- RUN THE APP ---
 
