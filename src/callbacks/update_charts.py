@@ -114,7 +114,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
                 alt.value("red"),   # normal color for selected modes
                 alt.value("grey")   # grey for unselected modes
             )
-        ).properties(width=100, height=400)
+        ).properties(width=80, height=400)
 
         # National weighted average (horizontal rule) with conditional color.
         national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(

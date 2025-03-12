@@ -54,6 +54,7 @@ line_title, line_chart = create_line()
 ### --- LAYOUT ---
 
 app.layout = dbc.Container([
+    # First Row: Controls
     dbc.Row(
         dbc.Col(
             dbc.Card(
@@ -61,11 +62,10 @@ app.layout = dbc.Container([
                     dbc.Row(dbc.Col(title, width=12)),
                     html.Br(),
                     dbc.Row([
-                        dbc.Col([province_dropdown_label, province_dropdown], md=3),  # NEW: Province Dropdown
-                        
-                        dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
-                        dbc.Col([mode_dropdown_label, mode_dropdown], md=2),
-                        dbc.Col([time_slider_label, time_slider], md=4)
+                        dbc.Col([province_dropdown_label, province_dropdown], xl=12, xxl=3),  # Responsive
+                        dbc.Col([cd_dropdown_label, cd_dropdown], xl=12, xxl=3),
+                        dbc.Col([mode_dropdown_label, mode_dropdown], xl=12, xxl=2),
+                        dbc.Col([time_slider_label, time_slider], xl=12, xxl=4)
                     ]),
                 ], fluid=True),
                 style={"backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "10px"}
@@ -75,44 +75,48 @@ app.layout = dbc.Container([
     ),
     html.Br(),
     dcc.Store(id="preprocessed-data"),
-    # First Chart Row - With Left & Right Padding
+
+    # First Chart Row
     dbc.Row([
         dbc.Col([
             dbc.Row([
-                dbc.Col(map_title),
+                dbc.Col(map_title, width=12),
                 dbc.Col([
-                            html.Div([
-                                dcc.Checklist(
-                                    id="zoom-toggle",
-                                    options=[{"label": "Zoom into Southern Quebec", "value": "zoom"}],
-                                    value=[],
-                                    inline=True
-                                )
-                            ], id="zoom-toggle-container", style={"display": "none"})  # Initially hidden
-                        ])
-                ]),
+                    html.Div([
+                        dcc.Checklist(
+                            id="zoom-toggle",
+                            options=[{"label": " Zoom into Southern Quebec", "value": "zoom"}],
+                            value=[],
+                            inline=True
+                        )
+                    ], id="zoom-toggle-container", style={"display": "none"})  # Initially hidden
+                ], width=12)
+            ]),
             dbc.Row(dbc.Col(choropleth_map))
-        ], md=7),
-        dbc.Col([
-            dbc.Row(dbc.Col(bar_title)),
-            dbc.Row(dbc.Col(bar_chart))
-        ], md=5)
-    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),
+        ], xl=12, xxl=7),  # Responsive: Full width on small screens, 7 columns on medium screens
 
-    # Second Chart Row - With Left & Right Padding
+        dbc.Col([
+            dbc.Row(dbc.Col(bar_title, width=12)),
+            dbc.Row(dbc.Col(bar_chart, width=12))
+        ], xl=12, xxl=5)  # Responsive: Full width on small screens, 5 columns on medium screens
+    ], className="gx-3 gy-3"),  # Adds spacing between rows/columns
+
+    # Second Chart Row
     dbc.Row([
         dbc.Col([
-            dbc.Row(dbc.Col(violin_title)),
-            dbc.Row(dbc.Col(violin_plot))
-        ], md=7),
+            dbc.Row(dbc.Col(violin_title, width=12)),
+            dbc.Row(dbc.Col(violin_plot, width=12))
+        ], xl=12, xxl=7),  # Responsive behavior
+
         dbc.Col([
-            dbc.Row(dbc.Col(line_title)),
-            dbc.Row(dbc.Col(line_chart))
-        ], md=5)
-    ], style={"paddingLeft": "20px", "paddingRight": "20px"}),
+            dbc.Row(dbc.Col(line_title, width=12)),
+            dbc.Row(dbc.Col(line_chart, width=12))
+        ], xl=12, xxl=5)  # Responsive behavior
+    ], className="gx-3 gy-3"),  # Adds spacing between rows/columns
 
     footer
 ], fluid=True)
+
 
 ### --- CALLBACKS ---
 
