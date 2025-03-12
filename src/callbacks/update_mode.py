@@ -9,7 +9,7 @@ def update_mode_callback(df, available_modes, dropdown_options):
         if not selected_cd:
             return dropdown_options
         # Filter for the selected CD and nonzero average commute time
-        df_cd = df[(df["GEO"] == selected_cd) & (df["AverageCommuteTime"] > 0)]
+        df_cd = df[(df["DGUID"] == selected_cd) & (df["AverageCommuteTime"] > 0)]
         # Get the unique modes that appear in the CD
         modes = df_cd["Main mode of commuting (21)"].unique()
         # Only keep those modes that are in the allowed available_modes list

@@ -3,7 +3,7 @@ import dash_vega_components as dvc
 
 def create_choropleth():
     map_title = html.H5("Average Commute Time by Census Division")
-    choropleth_map = dcc.Graph(id="choropleth-map")
+    choropleth_map = dvc.Vega(id="choropleth-map", spec={}, signalsToObserve=['select_region'])
     return map_title, choropleth_map
 
 def create_violin():
