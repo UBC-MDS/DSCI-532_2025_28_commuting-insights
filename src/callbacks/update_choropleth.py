@@ -66,10 +66,10 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
         # --- Build Altair Geoshape Chart ---
         select_region = alt.selection_point(fields=['properties.DGUID'], name='select_region')
 
-        highlight_condition = (
-            alt.condition(
-                alt.datum["properties.DGUID"] == selected_cd, alt.value(1), alt.value(0.5)
-            ) if selected_cd else alt.value(0.5)
+        highlight_condition = alt.condition(
+            alt.datum["properties.DGUID"] == selected_cd,  # If selected
+            alt.value(1),  # Full opacity
+            alt.value(1) if selected_cd is None else alt.value(0.5)  # Otherwise, default to 1 or 0.5
         )
 
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
