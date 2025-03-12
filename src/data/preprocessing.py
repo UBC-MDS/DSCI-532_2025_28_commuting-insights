@@ -36,7 +36,8 @@ def load(geo_path, commuting_path):
         "Commuting duration (7):15 to 29 minutes[3]",
         "Commuting duration (7):30 to 44 minutes[4]",
         "Commuting duration (7):45 to 59 minutes[5]",
-        "Commuting duration (7):60 minutes and over[6]"
+        "Commuting duration (7):60 minutes and over[6]",
+        "Province"
     ]]
     # Rename columns for convenience.
     df = df.rename(
@@ -82,7 +83,7 @@ def widget_inputs(df):
     # Create dropdown options with province names as labels and DGUID prefixes as values
     provinces = province_dguid_mapping.keys()
     dropdown_province_options = [
-        {"label": province, "value": dguid_prefix} for province, dguid_prefix in province_dguid_mapping.items()
+        {"label": province, "value": province} for province, dguid_prefix in province_dguid_mapping.items()
     ]
 
     # Define the selectable commuting modes

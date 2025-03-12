@@ -8,6 +8,7 @@ import dash
 alt.data_transformers.enable("vegafusion")
 
 def update_choropleth_callback(df, time_bin_order, geojson_data):
+    
     @callback(
         Output("preprocessed-data", "data"),  # Store precomputed values
         Input("province-dropdown", "value"),
@@ -20,7 +21,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
 
         # Apply filters efficiently
         if selected_province:
-            map_df = map_df[map_df["DGUID"].astype(str).str.startswith(selected_province)]
+            map_df = map_df[map_df["Province"]==selected_province]
         if selected_modes:
             map_df = map_df[map_df["Main mode of commuting (21)"].isin(selected_modes)]
         
@@ -34,21 +35,32 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
         map_df = map_df.dropna(subset=["AverageCommuteTime", "TotalDuration"])
 
         # Compute weighted average commute time
-        agg_df = map_df.groupby(["DGUID", "GEO"]).apply(
+        agg_df = map_df.groupby(["DGUID", "GEO", "Province"]).apply(
             lambda g: np.average(g["AverageCommuteTime"], weights=g["TotalDuration"])
             if g["TotalDuration"].sum() > 0 else np.nan
         ).reset_index(name="WeightedAverageCommute")
 
         # Store as JSON for fast retrieval
         return agg_df.to_json(date_format="iso", orient="split")
+    
+    @callback(
+        Output("zoom-toggle-container", "style"),
+        Input("province-dropdown", "value"),
+    )
+    def toggle_zoom_visibility(selected_province):
+        """Show zoom toggle only if Quebec (DGUID 24) is selected."""
+        if selected_province == "Quebec":
+            return {"display": "block"}
+        return {"display": "none"}
 
     @callback(
         Output("choropleth-map", "spec"),
         Input("preprocessed-data", "data"),
         Input("cd-dropdown", "value"),
+        Input("zoom-toggle", "value"),
         State("choropleth-map", "spec"),
     )
-    def update_choropleth(preprocessed_json, selected_cd, current_map):
+    def update_choropleth(preprocessed_json, selected_cd, zoom_enabled, current_map):
         """Update choropleth visualization efficiently using precomputed data."""
         if preprocessed_json is None:
             return dash.no_update  # Prevent updates if no data
@@ -72,6 +84,22 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
             alt.value(1) if selected_cd is None else alt.value(0.5)  # Otherwise, default to 1 or 0.5
         )
 
+        projection_params = {"type": "transverseMercator", "rotate": [90, 0, 0]}
+        print(agg_df.columns)
+        unique_provinces = agg_df["Province"].unique()
+        # If there's only one unique province, always use Mercator projection
+        if len(unique_provinces) == 1:
+            projection_params = {
+                "type": "mercator",
+            }
+
+        if zoom_enabled and (agg_df["Province"] == "Quebec").all():
+            projection_params = {
+                "type": "mercator",
+                "scale": 5000,  # Higher scale for zoom
+                "center": [-71.2082, 46.8033],  # Approximate center of Southern Quebec
+            }
+
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
             stroke="black"
         ).encode(
@@ -86,8 +114,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
         ).add_params(
             select_region
         ).project(
-            type="transverseMercator",
-            rotate=[90, 0, 0]
+            **projection_params
         ).properties(width="container", height=600)
 
         return map_chart.to_dict(format="vega")

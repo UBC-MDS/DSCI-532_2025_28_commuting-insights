@@ -12,7 +12,7 @@ def update_cd_callback(df, dropdown_cd_options):
 
         # Filter by province if selected
         if selected_province:
-            filtered_df = filtered_df[filtered_df["DGUID"].astype(str).str.startswith(selected_province)]
+            filtered_df = filtered_df[filtered_df["Province"]==selected_province]
 
         # Filter by selected modes if any
         if selected_modes and len(selected_modes) > 0:

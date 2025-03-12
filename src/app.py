@@ -26,8 +26,8 @@ from src.components.title_and_footer import create_title, create_footer
 ### --- LOAD AND PREPROCESS DATA ---
 
 geojson_data, df = load(
-    "data/raw/geojson/lcd_000b21a_e_simplified_0.5percent.geojson", 
-    "data/processed/commuting_data/commuting_data_census_divisions_disambiguated.csv"
+    "data/raw/geojson/lcd_000b21a_e_simplified_0.25percent.geojson", 
+    "data/processed/commuting_data/commuting_data_with_province.csv"
 )
 provinces, dropdown_province_options, available_modes, dropdown_options, available_cdnames, dropdown_cd_options, time_bins, time_bin_order, slider_marks = widget_inputs(df)
 
@@ -62,6 +62,7 @@ app.layout = dbc.Container([
                     html.Br(),
                     dbc.Row([
                         dbc.Col([province_dropdown_label, province_dropdown], md=3),  # NEW: Province Dropdown
+                        
                         dbc.Col([cd_dropdown_label, cd_dropdown], md=3),
                         dbc.Col([mode_dropdown_label, mode_dropdown], md=2),
                         dbc.Col([time_slider_label, time_slider], md=4)
@@ -77,7 +78,19 @@ app.layout = dbc.Container([
     # First Chart Row - With Left & Right Padding
     dbc.Row([
         dbc.Col([
-            dbc.Row(dbc.Col(map_title)),
+            dbc.Row([
+                dbc.Col(map_title),
+                dbc.Col([
+                            html.Div([
+                                dcc.Checklist(
+                                    id="zoom-toggle",
+                                    options=[{"label": "Zoom into Southern Quebec", "value": "zoom"}],
+                                    value=[],
+                                    inline=True
+                                )
+                            ], id="zoom-toggle-container", style={"display": "none"})  # Initially hidden
+                        ])
+                ]),
             dbc.Row(dbc.Col(choropleth_map))
         ], md=7),
         dbc.Col([
