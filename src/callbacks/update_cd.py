@@ -1,11 +1,12 @@
 from dash import Input, Output, callback
 
-def update_cd_callback(df, dropdown_cd_options):
+def update_cd_callback(df, dropdown_cd_options, cache):
 
     @callback(
         Output("cd-dropdown", "options"),
         [Input("mode-dropdown", "value"), Input("province-dropdown", "value")]  # Added province input
     )
+    @cache.memoize()
     def update_cd_options(selected_modes, selected_province):
         # Start with the full dataframe
         filtered_df = df.copy()

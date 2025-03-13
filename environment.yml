@@ -16,3 +16,4 @@ dependencies:
     - scipy==1.15
     - pip:
         - dash-vega-components
+        - flask_caching==2.3.1
