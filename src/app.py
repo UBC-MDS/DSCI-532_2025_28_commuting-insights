@@ -32,8 +32,8 @@ from src.components.title_and_footer import create_title, create_footer
 #)
 
 geojson_data, df = load(
-    "data/processed/binary/data_geojson", 
-    "data/processed/binary/data_csv"
+    "data/processed/binary/data_geojson.parquet", 
+    "data/processed/binary/data_csv.parquet"
 )
 
 provinces, dropdown_province_options, available_modes, dropdown_options, available_cdnames, dropdown_cd_options, time_bins, time_bin_order, slider_marks = widget_inputs(df)
