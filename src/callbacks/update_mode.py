@@ -1,10 +1,11 @@
 from dash import Input, Output, callback
 
-def update_mode_callback(df, available_modes, dropdown_options):
+def update_mode_callback(df, available_modes, dropdown_options, cache):
     @callback(
         Output("mode-dropdown", "options"),
         [Input("cd-dropdown", "value")]
     )
+    @cache.memoize()
     def update_mode_options(selected_cd):
         if not selected_cd:
             return dropdown_options

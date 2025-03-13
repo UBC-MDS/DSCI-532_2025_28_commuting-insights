@@ -7,6 +7,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from flask_caching import Cache
 
 parent_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(parent_dir)
@@ -35,6 +36,14 @@ provinces, dropdown_province_options, available_modes, dropdown_options, availab
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
 server = app.server
+
+cache = Cache(
+    app.server,
+    config={
+        'CACHE_TYPE': 'simple',
+        'CACHE_DEFAULT_TIMEOUT': 300
+    }
+)
 
 ### --- COMPONENTS ---
 
@@ -120,10 +129,10 @@ app.layout = dbc.Container([
 
 ### --- CALLBACKS ---
 
-update_mode_callback(df, available_modes, dropdown_options)
-update_cd_callback(df, dropdown_cd_options)
-update_choropleth_callback(df, time_bin_order, geojson_data)
-update_all_charts(df, time_bins, time_bin_order, geojson_data)
+update_mode_callback(df, available_modes, dropdown_options, cache)
+update_cd_callback(df, dropdown_cd_options, cache)
+update_choropleth_callback(df, time_bin_order, geojson_data, cache)
+update_all_charts(df, time_bins, time_bin_order, geojson_data, cache)
 
 
 
@@ -132,4 +141,4 @@ update_all_charts(df, time_bins, time_bin_order, geojson_data)
 if __name__ == "__main__":
     import os
     port = int(os.environ.get("PORT", 8050))
-    app.run_server(host="0.0.0.0", port=port, debug=True)
+    app.run_server(host="0.0.0.0", port=port, debug=False)

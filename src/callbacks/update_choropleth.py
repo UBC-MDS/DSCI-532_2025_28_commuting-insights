@@ -7,7 +7,7 @@ from scipy.stats import gaussian_kde
 import dash
 alt.data_transformers.enable("vegafusion")
 
-def update_choropleth_callback(df, time_bin_order, geojson_data):
+def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
     
     @callback(
         Output("preprocessed-data", "data"),  # Store precomputed values
@@ -15,6 +15,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
         Input("mode-dropdown", "value"),
         Input("time-slider", "value"),
     )
+    @cache.memoize()
     def preprocess_data(selected_province, selected_modes, time_range):
         """Preprocess data once and store in a Dash Store component."""
         map_df = df.copy()
