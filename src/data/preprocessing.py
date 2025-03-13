@@ -111,10 +111,10 @@ def widget_inputs(df):
 
     # Build slider marks
     point_labels = {
-        "Between 5 a.m. and 5:29 a.m.": "5am", "Between 5:30 a.m. and 5:59 a.m.": "5:30am",
-        "Between 6 a.m. and 6:29 a.m.": "6am", "Between 6:30 a.m. and 6:59 a.m.": "6:30am",
-        "Between 7 a.m. and 7:29 a.m.": "7am", "Between 7:30 a.m. and 7:59 a.m.": "7:30am",
-        "Between 8 a.m. and 8:29 a.m.": "8am", "Between 8:30 a.m. and 8:59 a.m.": "8:30am",
+        "Between 5 a.m. and 5:29 a.m.": "5am", "Between 5:30 a.m. and 5:59 a.m.": "5:30",
+        "Between 6 a.m. and 6:29 a.m.": "6am", "Between 6:30 a.m. and 6:59 a.m.": "6:30",
+        "Between 7 a.m. and 7:29 a.m.": "7am", "Between 7:30 a.m. and 7:59 a.m.": "7:30",
+        "Between 8 a.m. and 8:29 a.m.": "8am", "Between 8:30 a.m. and 8:59 a.m.": "8:30",
         "Between 9 a.m. and 9:59 a.m.": "9am", "Between 10 a.m. and 10:59 a.m.": "10am",
         "Between 11 a.m. and 11:59 a.m.": "11am", "Between 12 p.m. and 3:59 p.m.": "12pm",
         "Between 4 p.m. and 7:59 p.m.": "4pm", "Between 8 p.m. and 11:59 p.m.": "8pm",

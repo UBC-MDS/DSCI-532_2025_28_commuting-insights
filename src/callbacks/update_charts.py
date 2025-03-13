@@ -107,50 +107,43 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
 
         # Create the weighted density area with conditional color encoding.
         weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", opacity=0.25).encode(
-            y=alt.Y("AverageCommuteTime:Q", title="Average Commute Time (min)"),
+            y=alt.Y("AverageCommuteTime:Q", title="Commute Time (min)"),
             x=alt.X("density:Q", stack="center", title=None, axis=None),
-            color=alt.condition(
-                alt.datum.selected,
-                alt.value("red"),   # normal color for selected modes
-                alt.value("grey")   # grey for unselected modes
-            )
-        ).properties(width=80, height=400)
+            color=alt.value("red")  # Always red, no more graying out!
+        ).properties(width=78, height=400)
 
         # National weighted average (horizontal rule) with conditional color.
         national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
             y=alt.Y("nationalMean:Q"),
-            color=alt.condition(
-                alt.datum.selected,
-                alt.value("#FF3C3C"),
-                alt.value("grey")
-            ),
-            tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)"),
-                    alt.Tooltip("", type="nominal", title="")]
+            color=alt.value("#FF3C3C"),  # Always red, no conditions
+            tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)")]
         )
 
         # CD weighted average (horizontal rule) with conditional color.
-        blue_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
-            y=alt.Y("cdMean:Q"),
-            color=alt.condition(
-                alt.datum.selected,
-                alt.value("blue"),
-                alt.value("grey")
-            ),
-            tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)"),
-                    alt.Tooltip("", type="nominal", title="")]
+        blue_rule = (
+            alt.Chart(density_merged)
+            .transform_filter("datum.cdMean != 0 && datum.cdMean != null")  # Hides if 0 or missing
+            .mark_rule(strokeWidth=5)
+            .encode(
+                y=alt.Y("cdMean:Q"),
+                color=alt.value("blue"),
+                tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)")]
+            )
         )
 
         # Combine the density area and the horizontal rules, faceted by mode.
         final_violin = alt.layer(weighted_violin, national_rule, blue_rule).facet(
-            column=alt.Column("Main mode of commuting (21):N", title="Commuting Mode")
+            column=alt.Column("Main mode of commuting (21):N",
+                              title="Commuting Mode",
+                              header=alt.Header(labelFontSize=13, labelLimit=100))
         ).resolve_scale(x="independent")
 
         # (The legend and subsequent chart configurations remain unchanged.)
 
 
         legend_data = pd.DataFrame({
-            "Label": ["Average: Canada (min)", "Average: Selected CD (min)", "Unavailable"],
-            "Color": ["red", "blue", "grey"]
+            "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
+            "Color": ["red", "blue"]
         })
 
         # Circles
@@ -180,7 +173,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
         # Combine the points + text into one layer
         custom_legend = (
             alt.layer(legend_points, legend_text)
-            .properties(width=120, height=60)
+            .properties(width=120, height=40)
         )
 
         final_violin_with_legend = (
@@ -302,4 +295,26 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data):
             labelFontSize=13 
         )
         
-        return final_violin_with_legend.to_dict(format="vega"), bar_chart.to_dict(format="vega"), line_chart_spec.to_dict(format="vega")
+        ## ---- Remove "..." dropdown from all the charts ---- 
+        final_violin_dict = final_violin_with_legend.to_dict(format="vega")
+        final_violin_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        bar_chart_dict = bar_chart.to_dict(format="vega")
+        bar_chart_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        line_chart_spec_dict = line_chart_spec.to_dict(format="vega")
+        line_chart_spec_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        return final_violin_dict, bar_chart_dict, line_chart_spec_dict

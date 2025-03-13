@@ -107,7 +107,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
                             scale=alt.Scale(scheme="orangered"),
                             title="Avg Commute (min)"),
             tooltip=[
-                alt.Tooltip("properties.GEO:N", title="Division"),
+                alt.Tooltip("properties.GEO:N", title="Census Division"),
                 alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (min)"),
             ],
             opacity=highlight_condition
@@ -117,7 +117,15 @@ def update_choropleth_callback(df, time_bin_order, geojson_data):
             **projection_params
         ).properties(width="container", height=600)
 
-        return map_chart.to_dict(format="vega")
+        # Turn off the “...” menu
+        map_chart_dict = map_chart.to_dict(format="vega")
+        map_chart_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        return map_chart_dict
 
     @callback(
         Output("cd-dropdown", "value"),
