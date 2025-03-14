@@ -11,3 +11,4 @@ vl-convert-python==1.6.1
 vegafusion[embed]>=1.5.0
 numpy==2.2.*
 scipy==1.15.*
+flask_caching==2.3.*
