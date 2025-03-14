@@ -77,10 +77,10 @@ app.layout = dbc.Container([
                     dbc.Row(dbc.Col(title, width=12)),
                     html.Br(),
                     dbc.Row([
-                        dbc.Col([province_dropdown_label, province_dropdown], xl=12, xxl=3),  # Responsive
-                        dbc.Col([cd_dropdown_label, cd_dropdown], xl=12, xxl=3),
-                        dbc.Col([mode_dropdown_label, mode_dropdown], xl=12, xxl=2),
-                        dbc.Col([time_slider_label, time_slider], xl=12, xxl=4)
+                        dbc.Col([province_dropdown_label, province_dropdown], xxl=2),  # Responsive
+                        dbc.Col([cd_dropdown_label, cd_dropdown], xxl=3),
+                        dbc.Col([mode_dropdown_label, mode_dropdown], xxl=2),
+                        dbc.Col([time_slider_label, time_slider], xxl=5)
                     ]),
                 ], fluid=True),
                 style={"backgroundColor": "#f8f9fa", "padding": "10px", "borderRadius": "10px"}
@@ -122,7 +122,6 @@ app.layout = dbc.Container([
             dbc.Row(dbc.Col(violin_title, width=12)),
             dbc.Row(dbc.Col(violin_plot, width=12))
         ], xl=12, xxl=7),  # Responsive behavior
-
         dbc.Col([
             dbc.Row(dbc.Col(line_title, width=12)),
             dbc.Row(dbc.Col(line_chart, width=12))
