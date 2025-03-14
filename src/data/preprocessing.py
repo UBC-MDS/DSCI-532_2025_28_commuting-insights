@@ -7,7 +7,7 @@ def load(geo_path, commuting_path):
     gdf = gpd.read_parquet(geo_path)
 
     # Subset to only the columns we need
-    gdf = gdf[["DGUID", "CDUID", "CDNAME", "geometry"]]
+    gdf = gdf[["DGUID", "CDNAME", "geometry"]]
 
     # Fix the projection: EPSG:3347 → EPSG:4326 (lat/lon)
     gdf.crs = "EPSG:3347"
@@ -18,9 +18,6 @@ def load(geo_path, commuting_path):
     # Convert to GeoJSON dictionary
     geojson_data = json.loads(gdf_latlon.to_json())
 
-    # Assign "id" to each feature based on CDUID
-    for feature in geojson_data["features"]:
-        feature["id"] = feature["properties"]["CDUID"]
 
     # Load and filter the commuting data
     df = pd.read_parquet(commuting_path)
