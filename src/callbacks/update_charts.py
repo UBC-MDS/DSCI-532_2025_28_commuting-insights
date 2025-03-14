@@ -17,30 +17,18 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         base_data["time_order"] = base_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
         base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
         return base_data.to_json(date_format="iso", orient="split")
-
-
+    
     @callback(
-        [ 
-            Output("altair-violin-plot", "spec"),
-            Output("altair-bar-chart", "spec"),
-            Output("altair-line-chart", "spec")
-        ],
-        [
-            Input("preprocessed-chart-data", "data"),
-            Input("cd-dropdown", "value"),
-            Input("mode-dropdown", "value"),
-            State("mode-dropdown", "options"),
-            Input("time-slider", "value")
-        ]
+        Output("altair-violin-plot", "spec"),
+        Input("preprocessed-chart-data", "data"),
+        Input("cd-dropdown", "value")
     )
     @cache.memoize()
-    def update_charts(base_data_json, selected_cd, selected_modes, mode_options, time_range):
+    def update_violin(base_data_json, selected_cd):
         if base_data_json is None:
             return dash.no_update  # Prevent updates if no data
         
         base_data = pd.read_json(base_data_json, orient="split")
-        if not selected_modes:
-            selected_modes = [mode["label"] for mode in mode_options]
 
         # ---- Altair Violin Plot with Weighted Horizontal Rules ----
         # Compute national weighted averages per mode.
@@ -166,12 +154,44 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             .configure_header(titleFontSize=14, labelFontSize=12)
         )
 
+        final_violin_dict = final_violin_with_legend.to_dict(format="vega")
+        final_violin_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        return final_violin_dict
+
+
+    @callback(
+        [ 
+            Output("altair-bar-chart", "spec"),
+            Output("altair-line-chart", "spec")
+        ],
+        [
+            Input("preprocessed-chart-data", "data"),
+            Input("cd-dropdown", "value"),
+            Input("mode-dropdown", "value"),
+            State("mode-dropdown", "options"),
+            Input("time-slider", "value")
+        ]
+    )
+    @cache.memoize()
+    def update_charts(base_data_json, selected_cd, selected_modes, mode_options, time_range):
+        if base_data_json is None:
+            return dash.no_update  # Prevent updates if no data
+        
+        base_data = pd.read_json(base_data_json, orient="split")
+        if not selected_modes:
+            selected_modes = [mode["label"] for mode in mode_options]
+
         # ---- Altair Bar Chart: Stacked Counts for Duration Categories ----
         # Use the same filtered data (base_data) and melt the five duration columns.
         bar_data = base_data.copy()
         if selected_cd:
             bar_data = bar_data[bar_data["DGUID"] == selected_cd]
-        if selected_modes and len(selected_modes) > 0:
+        if selected_modes:
             bar_data = bar_data[bar_data["Main mode of commuting (21)"].isin(selected_modes)]
         bar_data = bar_data[["Main mode of commuting (21)", "Less15", "15to29", "30to44", "45to59", "60plus"]].copy()
         bar_data = bar_data.melt(id_vars=["Main mode of commuting (21)"],
@@ -203,7 +223,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         bar_chart = alt.Chart(bar_data).mark_bar().encode(
             x=alt.X("Count:Q", title="Count of Commute Observations"),
             y=alt.Y("DurationCategory:N",
-                    title="Commute Duration Category",
+                    title=None,
                     sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
                     axis=alt.Axis(labelAlign="left", orient="right")
             ),
@@ -230,7 +250,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         
         # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
         # # Create a separate dataframe for the line chart that is not filtered by the time slider.
-        line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
+        line_df = base_data.copy()
         if selected_cd:
             line_df = line_df[line_df["DGUID"] == selected_cd]
         if selected_modes:
@@ -292,12 +312,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         )
         
         ## ---- Remove "..." dropdown from all the charts ---- 
-        final_violin_dict = final_violin_with_legend.to_dict(format="vega")
-        final_violin_dict["usermeta"] = {
-            "embedOptions": {
-                "actions": False
-            }
-        }
+    
 
         bar_chart_dict = bar_chart.to_dict(format="vega")
         bar_chart_dict["usermeta"] = {
@@ -313,4 +328,4 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             }
         }
 
-        return final_violin_dict, bar_chart_dict, line_chart_spec_dict
+        return bar_chart_dict, line_chart_spec_dict
