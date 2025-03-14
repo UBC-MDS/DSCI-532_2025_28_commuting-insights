@@ -4,7 +4,7 @@ import json
 
 def load(geo_path, commuting_path):
 
-    gdf = gpd.read_file(geo_path)
+    gdf = gpd.read_parquet(geo_path)
 
     # Subset to only the columns we need
     gdf = gdf[["DGUID", "CDUID", "CDNAME", "geometry"]]
@@ -23,7 +23,7 @@ def load(geo_path, commuting_path):
         feature["id"] = feature["properties"]["CDUID"]
 
     # Load and filter the commuting data
-    df = pd.read_csv(commuting_path)
+    df = pd.read_parquet(commuting_path)
     # Keep only selected columns (including the count columns):
     df = df[[ 
         "GEO", 
