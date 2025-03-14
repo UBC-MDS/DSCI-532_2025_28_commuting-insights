@@ -210,7 +210,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
                     sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
                     axis=alt.Axis(labelAlign="left", orient="right")
             ),
-            color=alt.Color("Main mode of commuting (21):N", title="Mode"),
+            color=alt.Color("Main mode of commuting (21):N", title="Mode", scale=alt.Scale(scheme='set1')),
             tooltip=[
                 alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
                 alt.Tooltip("DurationCategory:N", title="Duration Category"),
@@ -247,21 +247,21 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         
         # Create a dictionary to map full labels to simplified labels.
         simplified_labels = {
-            "Between 5 a.m. and 5:29 a.m.": "5am - 5:29am",
-            "Between 5:30 a.m. and 5:59 a.m.": "5:30am - 5:59am",
-            "Between 6 a.m. and 6:29 a.m.": "6am - 6:29am",
-            "Between 6:30 a.m. and 6:59 a.m.": "6:30am - 6:59am",
-            "Between 7 a.m. and 7:29 a.m.": "7am - 7:29am",
-            "Between 7:30 a.m. and 7:59 a.m.": "7:30am - 7:59am",
-            "Between 8 a.m. and 8:29 a.m.": "8am - 8:29am",
-            "Between 8:30 a.m. and 8:59 a.m.": "8:30am - 8:59am",
-            "Between 9 a.m. and 9:59 a.m.": "9am - 9:59am",
-            "Between 10 a.m. and 10:59 a.m.": "10am - 10:59am",
-            "Between 11 a.m. and 11:59 a.m.": "11am - 11:59am",
-            "Between 12 p.m. and 3:59 p.m.": "12pm - 3:59pm",
-            "Between 4 p.m. and 7:59 p.m.": "4pm - 7:59pm",
-            "Between 8 p.m. and 11:59 p.m.": "8pm - 11:59pm",
-            "Between 12 a.m. and 4:59 a.m.": "12am - 4:59am"
+            "Between 5 a.m. and 5:29 a.m.": "5 am",
+            "Between 5:30 a.m. and 5:59 a.m.": "5:30 am",
+            "Between 6 a.m. and 6:29 a.m.": "6 am",
+            "Between 6:30 a.m. and 6:59 a.m.": "6:30 am",
+            "Between 7 a.m. and 7:29 a.m.": "7 am",
+            "Between 7:30 a.m. and 7:59 a.m.": "7:30 am",
+            "Between 8 a.m. and 8:29 a.m.": "8 am",
+            "Between 8:30 a.m. and 8:59 a.m.": "8:30 am",
+            "Between 9 a.m. and 9:59 a.m.": "9 am",
+            "Between 10 a.m. and 10:59 a.m.": "10 am",
+            "Between 11 a.m. and 11:59 a.m.": "11 am",
+            "Between 12 p.m. and 3:59 p.m.": "12 pm",
+            "Between 4 p.m. and 7:59 p.m.": "4 pm",
+            "Between 8 p.m. and 11:59 p.m.": "8 pm",
+            "Between 12 a.m. and 4:59 a.m.": "12 am"
         }
 
         # Create a simplified order list that matches the original time_bins order.
@@ -273,7 +273,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
             x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
             y=alt.Y("weighted_avg:Q", title="Average Commute Time (mins)"),
-            color=alt.Color("Main mode of commuting (21):N", title="Mode"),
+            color=alt.Color("Main mode of commuting (21):N", title="Mode", scale=alt.Scale(scheme='set1')),
             tooltip=[
                 alt.Tooltip("TimeSimplified:N", title="Time"),
                 alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
@@ -283,7 +283,8 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
             height=400
         ).configure_axis(
             titleFontSize=14,
-            labelFontSize=13
+            labelFontSize=13,
+            labelAngle=45
         ).configure_legend(
             titleFontSize=14,
             labelFontSize=13 
