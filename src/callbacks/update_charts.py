@@ -310,7 +310,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             18: "10pm",
             20: "12am",
             22.5: "2:30",
-            25: "4:59"
+            25: "5am"
         }
 
         # 3️⃣ Generate Altair Label Expression Automatically
@@ -319,12 +319,13 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
 
 
         # 5️⃣ Create Altair Line Chart
-        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
+        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=False).encode(
             x=alt.X(
                 "TimeMidpoint:Q",
                 scale=alt.Scale(domain=[min(values_list), max(values_list)]),  # Ensure proper axis limits
                 title="Time arriving at work",
                 axis=alt.Axis(
+                    # tickCount=20,
                     values=values_list,  # Ensure proper tick placement
                     labelExpr=label_expr  # Ensure readable labels
                 )
@@ -339,6 +340,8 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
                 alt.Tooltip("Time arriving at work (16):N", title="Time Bin"),
                 alt.Tooltip("weighted_avg:Q", format=".1f", title="Avg Commute (mins)")
             ]
+        ).add_selection(
+            alt.selection_interval(bind='scales')
         ).properties(
             width="container",
             height=400
