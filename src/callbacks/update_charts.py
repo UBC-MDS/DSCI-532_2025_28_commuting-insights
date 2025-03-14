@@ -195,12 +195,12 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
 
         # Color code tied to commute mode
         mode_colors = {
-            'Bicycle': '#e41a1c',  # Red
-            'Car, truck or van': '#377eb8',  # Blue
-            'Motorcycle, scooter or moped': '#4daf4a',  # Green
-            'Other method': '#984ea3',   # Purple
-            'Public transit': '#ff7f00', # Orange
-            'Walked': '#ffff33'  # Yellow
+            'Bicycle': '#377eb8',  # Blue
+            'Car, truck or van': '#ff7f00',  # Orange
+            'Motorcycle, scooter or moped': '#e41a1c',  # Red
+            'Other method': '#8cbed6',   # Dark Blue Sky
+            'Public transit': '#4daf4a', # Green
+            'Walked': '#ffdb58'  # Mustard
         }
 
         # Map raw duration column names to descriptive labels.
