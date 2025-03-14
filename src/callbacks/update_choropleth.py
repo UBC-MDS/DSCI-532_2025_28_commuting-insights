@@ -59,9 +59,8 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         Input("preprocessed-data", "data"),
         Input("cd-dropdown", "value"),
         Input("zoom-toggle", "value"),
-        State("choropleth-map", "spec"),
     )
-    def update_choropleth(preprocessed_json, selected_cd, zoom_enabled, current_map):
+    def update_choropleth(preprocessed_json, selected_cd, zoom_enabled):
         """Update choropleth visualization efficiently using precomputed data."""
         if preprocessed_json is None:
             return dash.no_update  # Prevent updates if no data
@@ -86,7 +85,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         )
 
         projection_params = {"type": "transverseMercator", "rotate": [90, 0, 0]}
-        print(agg_df.columns)
+
         unique_provinces = agg_df["Province"].unique()
         # If there's only one unique province, always use Mercator projection
         if len(unique_provinces) == 1:
@@ -100,7 +99,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
                 "scale": 5000,  # Higher scale for zoom
                 "center": [-71.2082, 46.8033],  # Approximate center of Southern Quebec
             }
-
+        print(geojson_data["features"][0]["properties"].keys())
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
             stroke="black"
         ).encode(
