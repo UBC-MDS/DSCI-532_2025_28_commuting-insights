@@ -106,10 +106,10 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         ).encode(
             color=alt.Color("properties.WeightedAverageCommute:Q",
                             scale=alt.Scale(scheme="orangered"),
-                            title="Avg Commute (min)"),
+                            title="Avg Commute (mins)"),
             tooltip=[
                 alt.Tooltip("properties.GEO:N", title="Census Division"),
-                alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (min)"),
+                alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (mins)"),
             ],
             opacity=highlight_condition
         ).add_params(
@@ -139,4 +139,4 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
             selected_cd = signalData['select_region']['properties\\.DGUID'][0]
             if selected_cd != current_dropdown:  # Avoid unnecessary updates
                 return selected_cd
-        return dash.no_update  # No change needed
+        return dash.no_update
