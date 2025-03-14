@@ -37,8 +37,6 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         else:
             base_data["is_subset"] = False
         
-        # Right after you finish filtering base_data by time range, etc.:
-
         if not selected_modes or len(selected_modes) == 0:
             if selected_cd:
                 # Highlight only modes that have nonzero AverageCommuteTime in the chosen CD
@@ -108,7 +106,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
 
         # Create the weighted density area with conditional color encoding.
         weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", opacity=0.25).encode(
-            y=alt.Y("AverageCommuteTime:Q", title="Commute Time (min)"),
+            y=alt.Y("AverageCommuteTime:Q", title="Commute Time (mins)"),
             x=alt.X("density:Q", stack="center", title=None, axis=None),
             color=alt.value("red")  # Always red, no more graying out!
         ).properties(width=78, height=400)
@@ -117,7 +115,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
             y=alt.Y("nationalMean:Q"),
             color=alt.value("#FF3C3C"),  # Always red, no conditions
-            tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (min)")]
+            tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (mins)")]
         )
 
         # CD weighted average (horizontal rule) with conditional color.
@@ -128,7 +126,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
             .encode(
                 y=alt.Y("cdMean:Q"),
                 color=alt.value("blue"),
-                tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (min)")]
+                tooltip=[alt.Tooltip("cdMean:Q", format=".1f", title="Average: Selected CD (mins)")]
             )
         )
 
@@ -139,11 +137,8 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
                               header=alt.Header(labelFontSize=13, labelLimit=100))
         ).resolve_scale(x="independent")
 
-        # (The legend and subsequent chart configurations remain unchanged.)
-
-
         legend_data = pd.DataFrame({
-            "Label": ["Average: Canada (min)", "Average: Selected CD (min)"],
+            "Label": ["Average: Canada (mins)", "Average: Selected CD (mins)"],
             "Color": ["red", "blue"]
         })
 
@@ -236,7 +231,6 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         
         # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
         # # Create a separate dataframe for the line chart that is not filtered by the time slider.
-            # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
         line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
         if selected_cd:
             line_df = line_df[line_df["DGUID"] == selected_cd]
@@ -276,10 +270,9 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         # In your line chart data (line_df_agg), create a new column "TimeSimplified":
         line_df_agg["TimeSimplified"] = line_df_agg["Time arriving at work (16)"].map(simplified_labels)
 
-        
         line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
             x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
-            y=alt.Y("weighted_avg:Q", title="Average Commute Time (min)"),
+            y=alt.Y("weighted_avg:Q", title="Average Commute Time (mins)"),
             color=alt.Color("Main mode of commuting (21):N", title="Mode"),
             tooltip=[
                 alt.Tooltip("TimeSimplified:N", title="Time"),

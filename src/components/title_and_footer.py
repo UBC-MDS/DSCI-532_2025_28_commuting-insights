@@ -5,6 +5,17 @@ def create_title():
     title = html.H1("Commuting Insights Dashboard")
     return title
 
+def create_reset_button():
+    reset_button = dbc.Row(
+        dbc.Col(
+            dbc.Button("Reset Filters", id="reset-button", color="primary", size="sm"),
+            width="auto"
+        ),
+        justify="end",
+        className="mb-1"
+    )
+    return reset_button
+
 def create_footer():
     footer = dbc.Container([
         html.Hr(),
@@ -18,6 +29,6 @@ def create_footer():
         ]))),
         dbc.Row(dbc.Col(html.A("View on GitHub", href="https://github.com/UBC-MDS/DSCI-532_2025_28_commuting-insights", target="_blank", style={"font-weight": "bold"}))),
         html.Br(),
-        dbc.Row(dbc.Col(html.P("Last updated: Saturday, March 8th 2025", style={"font-style": "italic"})))
+        dbc.Row(dbc.Col(html.P("Last updated: Sunday, March 16th 2025", style={"font-style": "italic"})))
     ], fluid=True)
     return footer

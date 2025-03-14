@@ -17,19 +17,15 @@ from src.callbacks.update_mode import update_mode_callback
 from src.callbacks.update_cd import update_cd_callback
 from src.callbacks.update_charts import update_all_charts
 from src.callbacks.update_choropleth import update_choropleth_callback  
+from src.callbacks.reset_filters import reset_filters_callback
 from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
 from src.components.province_dropdown import create_province_dropdown  
 from src.components.time_slider import create_time_slider
 from src.components.charts import create_choropleth, create_violin, create_bar, create_line
-from src.components.title_and_footer import create_title, create_footer
+from src.components.title_and_footer import create_title, create_reset_button, create_footer
 
 ### --- LOAD AND PREPROCESS DATA ---
-
-#geojson_data, df = load(
-#    "data/raw/geojson/lcd_000b21a_e_simplified_0.25percent.geojson", 
-#    "data/processed/commuting_data/commuting_data_with_province.csv"
-#)
 
 geojson_data, df = load(
     "data/processed/binary/data_geojson.parquet", 
@@ -54,9 +50,10 @@ cache = Cache(
 ### --- COMPONENTS ---
 
 title = create_title()
+reset_button = create_reset_button()
 footer = create_footer()
 
-province_dropdown_label, province_dropdown = create_province_dropdown(dropdown_province_options)  # NEW
+province_dropdown_label, province_dropdown = create_province_dropdown(dropdown_province_options)
 cd_dropdown_label, cd_dropdown = create_cd_dropdown(dropdown_cd_options)
 mode_dropdown_label, mode_dropdown = create_mode_dropdown(dropdown_options)
 time_slider_label, time_slider = create_time_slider(time_bins, slider_marks)
@@ -75,7 +72,7 @@ app.layout = dbc.Container([
             dbc.Card(
                 dbc.Container([
                     dbc.Row(dbc.Col(title, width=12)),
-                    html.Br(),
+                    dbc.Row(dbc.Col(reset_button, width=12), className="mb-1"),
                     dbc.Row([
                         dbc.Col([province_dropdown_label, province_dropdown], xxl=2),  # Responsive
                         dbc.Col([cd_dropdown_label, cd_dropdown], xxl=3),
@@ -138,8 +135,7 @@ update_mode_callback(df, available_modes, dropdown_options, cache)
 update_cd_callback(df, dropdown_cd_options, cache)
 update_choropleth_callback(df, time_bin_order, geojson_data, cache)
 update_all_charts(df, time_bins, time_bin_order, geojson_data, cache)
-
-
+reset_filters_callback(time_bins, cache)
 
 ### --- RUN THE APP ---
 
