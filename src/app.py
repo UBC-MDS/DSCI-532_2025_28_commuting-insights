@@ -40,7 +40,7 @@ provinces, dropdown_province_options, available_modes, dropdown_options, availab
 
 ### --- INITIALIZATION ---
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard")
+app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CERULEAN], title="Commuting Insights Dashboard", assets_folder = "assets")
 server = app.server
 
 cache = Cache(
