@@ -192,7 +192,17 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
                                 var_name="DurationCategory", value_name="Count")
         # Group by DurationCategory and Mode, summing counts.
         bar_data = bar_data.groupby(["DurationCategory", "Main mode of commuting (21)"], as_index=False)["Count"].sum()
-        
+
+        # Color code tied to commute mode
+        mode_colors = {
+            'Bicycle': '#e41a1c',  # Red
+            'Car, truck or van': '#377eb8',  # Blue
+            'Motorcycle, scooter or moped': '#4daf4a',  # Green
+            'Other method': '#984ea3',   # Purple
+            'Public transit': '#ff7f00', # Orange
+            'Walked': '#ffff33'  # Yellow
+        }
+
         # Map raw duration column names to descriptive labels.
         duration_labels = {
             "Less15": "< 15 mins",
@@ -210,7 +220,9 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
                     sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
                     axis=alt.Axis(labelAlign="left", orient="right")
             ),
-            color=alt.Color("Main mode of commuting (21):N", title="Mode", scale=alt.Scale(scheme='set1')),
+            color=alt.Color("Main mode of commuting (21):N", 
+                            title="Mode", 
+                            scale=alt.Scale(domain = list(mode_colors.keys()), range = list(mode_colors.values()))),
             tooltip=[
                 alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
                 alt.Tooltip("DurationCategory:N", title="Duration Category"),
@@ -247,21 +259,21 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         
         # Create a dictionary to map full labels to simplified labels.
         simplified_labels = {
-            "Between 5 a.m. and 5:29 a.m.": "5 am",
-            "Between 5:30 a.m. and 5:59 a.m.": "5:30 am",
-            "Between 6 a.m. and 6:29 a.m.": "6 am",
-            "Between 6:30 a.m. and 6:59 a.m.": "6:30 am",
-            "Between 7 a.m. and 7:29 a.m.": "7 am",
-            "Between 7:30 a.m. and 7:59 a.m.": "7:30 am",
-            "Between 8 a.m. and 8:29 a.m.": "8 am",
-            "Between 8:30 a.m. and 8:59 a.m.": "8:30 am",
-            "Between 9 a.m. and 9:59 a.m.": "9 am",
-            "Between 10 a.m. and 10:59 a.m.": "10 am",
-            "Between 11 a.m. and 11:59 a.m.": "11 am",
-            "Between 12 p.m. and 3:59 p.m.": "12 pm",
-            "Between 4 p.m. and 7:59 p.m.": "4 pm",
-            "Between 8 p.m. and 11:59 p.m.": "8 pm",
-            "Between 12 a.m. and 4:59 a.m.": "12 am"
+            "Between 5 a.m. and 5:29 a.m.": "5am",
+            "Between 5:30 a.m. and 5:59 a.m.": "5:30",
+            "Between 6 a.m. and 6:29 a.m.": "6am",
+            "Between 6:30 a.m. and 6:59 a.m.": "6:30",
+            "Between 7 a.m. and 7:29 a.m.": "7am",
+            "Between 7:30 a.m. and 7:59 a.m.": "7:30",
+            "Between 8 a.m. and 8:29 a.m.": "8am",
+            "Between 8:30 a.m. and 8:59 a.m.": "8:30",
+            "Between 9 a.m. and 9:59 a.m.": "9am",
+            "Between 10 a.m. and 10:59 a.m.": "10am",
+            "Between 11 a.m. and 11:59 a.m.": "11am",
+            "Between 12 p.m. and 3:59 p.m.": "12pm",
+            "Between 4 p.m. and 7:59 p.m.": "4pm",
+            "Between 8 p.m. and 11:59 p.m.": "8pm",
+            "Between 12 a.m. and 4:59 a.m.": "12am"
         }
 
         # Create a simplified order list that matches the original time_bins order.
@@ -273,7 +285,9 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
             x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
             y=alt.Y("weighted_avg:Q", title="Average Commute Time (mins)"),
-            color=alt.Color("Main mode of commuting (21):N", title="Mode", scale=alt.Scale(scheme='set1')),
+            color=alt.Color("Main mode of commuting (21):N", 
+                            title="Mode", 
+                            scale=alt.Scale(domain = list(mode_colors.keys()), range = list(mode_colors.values()))),
             tooltip=[
                 alt.Tooltip("TimeSimplified:N", title="Time"),
                 alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
@@ -284,7 +298,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         ).configure_axis(
             titleFontSize=14,
             labelFontSize=13,
-            labelAngle=45
+            labelAngle=0
         ).configure_legend(
             titleFontSize=14,
             labelFontSize=13 
