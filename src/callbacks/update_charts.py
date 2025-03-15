@@ -263,41 +263,84 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
 
         line_df_agg = line_df_agg[line_df_agg["weighted_avg"] != 0]
         
-        # Create a dictionary to map full labels to simplified labels.
-        simplified_labels = {
-            "Between 5 a.m. and 5:29 a.m.": "5am",
-            "Between 5:30 a.m. and 5:59 a.m.": "5:30",
-            "Between 6 a.m. and 6:29 a.m.": "6am",
-            "Between 6:30 a.m. and 6:59 a.m.": "6:30",
-            "Between 7 a.m. and 7:29 a.m.": "7am",
-            "Between 7:30 a.m. and 7:59 a.m.": "7:30",
-            "Between 8 a.m. and 8:29 a.m.": "8am",
-            "Between 8:30 a.m. and 8:59 a.m.": "8:30",
-            "Between 9 a.m. and 9:59 a.m.": "9am",
-            "Between 10 a.m. and 10:59 a.m.": "10am",
-            "Between 11 a.m. and 11:59 a.m.": "11am",
-            "Between 12 p.m. and 3:59 p.m.": "12pm",
-            "Between 4 p.m. and 7:59 p.m.": "4pm",
-            "Between 8 p.m. and 11:59 p.m.": "8pm",
-            "Between 12 a.m. and 4:59 a.m.": "12am"
+        # 1️⃣ Define Midpoints for Data Placement
+        time_midpoints = {
+            "Between 5 a.m. and 5:29 a.m.": 1.25,   # Between 5am and 5:30
+            "Between 5:30 a.m. and 5:59 a.m.": 1.75,  # Between 5:30 and 6am
+            "Between 6 a.m. and 6:29 a.m.": 2.25,
+            "Between 6:30 a.m. and 6:59 a.m.": 2.75,
+            "Between 7 a.m. and 7:29 a.m.": 3.25,
+            "Between 7:30 a.m. and 7:59 a.m.": 3.75,
+            "Between 8 a.m. and 8:29 a.m.": 4.25,
+            "Between 8:30 a.m. and 8:59 a.m.": 4.75,
+            "Between 9 a.m. and 9:59 a.m.": 5.5,   # Full hour bin sits at 5.5
+            "Between 10 a.m. and 10:59 a.m.": 6.5,
+            "Between 11 a.m. and 11:59 a.m.": 7.5,
+            "Between 12 p.m. and 3:59 p.m.": 10,  # Midpoint of 12pm-4pm
+            "Between 4 p.m. and 7:59 p.m.": 14,
+            "Between 8 p.m. and 11:59 p.m.": 18,
+            "Between 12 a.m. and 4:59 a.m.": 22.5
         }
 
-        # Create a simplified order list that matches the original time_bins order.
-        simplified_time_bins = [simplified_labels[t] for t in time_bins]
+        # Apply midpoints to DataFrame
+        line_df_agg["TimeMidpoint"] = line_df_agg["Time arriving at work (16)"].map(time_midpoints)
 
-        # In your line chart data (line_df_agg), create a new column "TimeSimplified":
-        line_df_agg["TimeSimplified"] = line_df_agg["Time arriving at work (16)"].map(simplified_labels)
+        # 2️⃣ Define Tick Positions for Labels
+        tick_positions = {
+            1: "5am",
+            1.5: "5:30",
+            2: "6am",
+            2.5: "6:30",
+            3: "7am",
+            3.5: "7:30",
+            4: "8am",
+            4.5: "8:30",
+            5: "9am",
+            5.5: "9:30",
+            6: "10am",
+            6.5: "10:30",
+            7: "11am",
+            7.5: "11:30",
+            8: "12pm",
+            10: "2pm",
+            12: "4pm",
+            14: "6pm",
+            16: "8pm",
+            18: "10pm",
+            20: "12am",
+            22.5: "2:30",
+            25: "5am"
+        }
 
-        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=True).encode(
-            x=alt.X("TimeSimplified:N", sort=simplified_time_bins, title="Time arriving at work"),
+        # 3️⃣ Generate Altair Label Expression Automatically
+        values_list = sorted(tick_positions.keys())  # Sorted list of numeric tick positions
+        label_expr = " ".join([f"datum.value == {val} ? '{label}' :" for val, label in tick_positions.items()]) + " ''"
+
+
+        # 5️⃣ Create Altair Line Chart
+        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=False).encode(
+            x=alt.X(
+                "TimeMidpoint:Q",
+                scale=alt.Scale(domain=[min(values_list), max(values_list)]),  # Ensure proper axis limits
+                title="Time arriving at work",
+                axis=alt.Axis(
+                    # tickCount=20,
+                    values=values_list,  # Ensure proper tick placement
+                    labelExpr=label_expr  # Ensure readable labels
+                )
+            ),
             y=alt.Y("weighted_avg:Q", title="Average Commute Time (mins)"),
-            color=alt.Color("Main mode of commuting (21):N", 
-                            title="Mode", 
-                            scale=alt.Scale(domain = list(mode_colors.keys()), range = list(mode_colors.values()))),
+            color=alt.Color(
+                "Main mode of commuting (21):N",
+                title="Mode",
+                scale=alt.Scale(domain=list(mode_colors.keys()), range=list(mode_colors.values()))
+            ),
             tooltip=[
-                alt.Tooltip("TimeSimplified:N", title="Time"),
-                alt.Tooltip("weighted_avg:Q", format=".1f", title="Average (mins)")
+                alt.Tooltip("Time arriving at work (16):N", title="Time Bin"),
+                alt.Tooltip("weighted_avg:Q", format=".1f", title="Avg Commute (mins)")
             ]
+        ).add_selection(
+            alt.selection_interval(bind='scales')
         ).properties(
             width="container",
             height=400
@@ -307,8 +350,13 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             labelAngle=0
         ).configure_legend(
             titleFontSize=14,
-            labelFontSize=13 
+            labelFontSize=13
         )
+
+
+
+
+
         
         ## ---- Remove "..." dropdown from all the charts ---- 
     
