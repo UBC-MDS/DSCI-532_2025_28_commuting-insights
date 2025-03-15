@@ -1,5 +1,4 @@
-import dash
-from dash import Input, Output, callback, State
+from dash import Input, Output, callback, State, no_update
 import altair as alt
 import pandas as pd
 import plotly.express as px
@@ -26,7 +25,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
     @cache.memoize()
     def update_violin(base_data_json, selected_cd):
         if base_data_json is None:
-            return dash.no_update  # Prevent updates if no data
+            return no_update  # Prevent updates if no data
         
         base_data = pd.read_json(base_data_json, orient="split")
 
@@ -180,7 +179,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
     @cache.memoize()
     def update_charts(base_data_json, selected_cd, selected_modes, mode_options, time_range):
         if base_data_json is None:
-            return dash.no_update  # Prevent updates if no data
+            return no_update  # Prevent updates if no data
         
         base_data = pd.read_json(base_data_json, orient="split")
         if not selected_modes:
