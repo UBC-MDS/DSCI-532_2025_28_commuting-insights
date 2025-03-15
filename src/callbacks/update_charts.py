@@ -318,7 +318,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
 
 
         # 5️⃣ Create Altair Line Chart
-        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=False).encode(
+        line_chart_spec = alt.Chart(line_df_agg).mark_line(point=False, interpolate="monotone").encode(
             x=alt.X(
                 "TimeMidpoint:Q",
                 scale=alt.Scale(domain=[min(values_list), max(values_list)]),  # Ensure proper axis limits
