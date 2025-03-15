@@ -18,7 +18,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
     @cache.memoize()
     def preprocess_data(selected_province, selected_modes, time_range):
         """Preprocess data once and store in a Dash Store component."""
-        map_df = df.copy()
+        map_df = df[["GEO", "DGUID", "Time arriving at work (16)", "Main mode of commuting (21)", "AverageCommuteTime", "TotalDuration", "Province"]].copy()
 
         # Apply filters efficiently
         if selected_province:
@@ -59,9 +59,9 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         Input("preprocessed-data", "data"),
         Input("cd-dropdown", "value"),
         Input("zoom-toggle", "value"),
-        State("choropleth-map", "spec"),
+        State("province-dropdown", "value")
     )
-    def update_choropleth(preprocessed_json, selected_cd, zoom_enabled, current_map):
+    def update_choropleth(preprocessed_json, selected_cd, zoom_enabled, selected_province):
         """Update choropleth visualization efficiently using precomputed data."""
         if preprocessed_json is None:
             return dash.no_update  # Prevent updates if no data
@@ -74,7 +74,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         for feature in geojson_data["features"]:
             dguid = feature["properties"].get("DGUID")
             feature["properties"]["WeightedAverageCommute"] = agg_dict.get(dguid, {}).get("WeightedAverageCommute", None)
-            feature["properties"]["GEO"] = agg_dict.get(dguid, {}).get("GEO", None)
+            # feature["properties"]["GEO"] = agg_dict.get(dguid, {}).get("GEO", None)
 
         # --- Build Altair Geoshape Chart ---
         select_region = alt.selection_point(fields=['properties.DGUID'], name='select_region')
@@ -86,21 +86,20 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
         )
 
         projection_params = {"type": "transverseMercator", "rotate": [90, 0, 0]}
-        print(agg_df.columns)
-        unique_provinces = agg_df["Province"].unique()
-        # If there's only one unique province, always use Mercator projection
-        if len(unique_provinces) == 1:
+
+        
+        if selected_province:
             projection_params = {
                 "type": "mercator",
             }
 
-        if zoom_enabled and (agg_df["Province"] == "Quebec").all():
+        if zoom_enabled and selected_province == "Quebec":
             projection_params = {
                 "type": "mercator",
                 "scale": 5000,  # Higher scale for zoom
                 "center": [-71.2082, 46.8033],  # Approximate center of Southern Quebec
             }
-
+        print(geojson_data["features"][0]["properties"].keys())
         map_chart = alt.Chart(alt.Data(values=geojson_data["features"])).mark_geoshape(
             stroke="black"
         ).encode(
@@ -108,7 +107,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
                             scale=alt.Scale(scheme="orangered"),
                             title="Avg Commute (mins)"),
             tooltip=[
-                alt.Tooltip("properties.GEO:N", title="Census Division"),
+                alt.Tooltip("properties.CDNAME:N", title="Census Division"),
                 alt.Tooltip("properties.WeightedAverageCommute:Q", format=".1f", title="Avg Commute (mins)"),
             ],
             opacity=highlight_condition

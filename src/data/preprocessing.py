@@ -7,7 +7,7 @@ def load(geo_path, commuting_path):
     gdf = gpd.read_parquet(geo_path)
 
     # Subset to only the columns we need
-    gdf = gdf[["DGUID", "CDUID", "CDNAME", "geometry"]]
+    gdf = gdf[["DGUID", "CDNAME", "geometry"]]
 
     # Fix the projection: EPSG:3347 → EPSG:4326 (lat/lon)
     gdf.crs = "EPSG:3347"
@@ -18,9 +18,6 @@ def load(geo_path, commuting_path):
     # Convert to GeoJSON dictionary
     geojson_data = json.loads(gdf_latlon.to_json())
 
-    # Assign "id" to each feature based on CDUID
-    for feature in geojson_data["features"]:
-        feature["id"] = feature["properties"]["CDUID"]
 
     # Load and filter the commuting data
     df = pd.read_parquet(commuting_path)
@@ -63,27 +60,10 @@ def load(geo_path, commuting_path):
     return geojson_data, df
 
 def widget_inputs(df):
-    # Define Canadian provinces and territories
-    province_dguid_mapping = {
-        "Newfoundland and Labrador": "2021A000310",
-        "Prince Edward Island": "2021A000311",
-        "Nova Scotia": "2021A000312",
-        "New Brunswick": "2021A000313",
-        "Quebec": "2021A000324",
-        "Ontario": "2021A000335",
-        "Manitoba": "2021A000346",
-        "Saskatchewan": "2021A000347",
-        "Alberta": "2021A000348",
-        "British Columbia": "2021A000359",
-        "Yukon": "2021A000360",
-        "Northwest Territories": "2021A000361",
-        "Nunavut": "2021A000362"
-    }
-
     # Create dropdown options with province names as labels and DGUID prefixes as values
-    provinces = province_dguid_mapping.keys()
+    provinces = sorted(df["Province"].unique())
     dropdown_province_options = [
-        {"label": province, "value": province} for province, dguid_prefix in province_dguid_mapping.items()
+        {"label": province, "value": province} for province in provinces
     ]
 
     # Define the selectable commuting modes
