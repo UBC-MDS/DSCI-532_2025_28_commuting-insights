@@ -7,7 +7,7 @@ def create_province_dropdown(dropdown_options):
         id="province-dropdown",
         options=dropdown_options,
         multi=False,
-        placeholder="Select one province...",
+        placeholder="Select one province/territory...",
         searchable=True
     )
     return province_dropdown_label, province_dropdown

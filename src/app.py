@@ -87,7 +87,7 @@ app.layout = dbc.Container([
     ),
     html.Br(),
     dcc.Store(id="preprocessed-data"),
-
+    dcc.Store(id="preprocessed-chart-data"),
     # First Chart Row
     dbc.Row([
         dbc.Col([
@@ -134,7 +134,7 @@ app.layout = dbc.Container([
 update_mode_callback(df, available_modes, dropdown_options, cache)
 update_cd_callback(df, dropdown_cd_options, cache)
 update_choropleth_callback(df, time_bin_order, geojson_data, cache)
-update_all_charts(df, time_bins, time_bin_order, geojson_data, cache)
+update_all_charts(df, time_bins, time_bin_order, cache)
 reset_filters_callback(time_bins, cache)
 
 ### --- RUN THE APP ---

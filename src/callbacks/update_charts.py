@@ -1,4 +1,4 @@
-from dash import Input, Output, callback
+from dash import Input, Output, callback, State, no_update
 import altair as alt
 import pandas as pd
 import plotly.express as px
@@ -6,52 +6,30 @@ import numpy as np
 from scipy.stats import gaussian_kde
 alt.data_transformers.enable("vegafusion")
 
-def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
+def update_all_charts(df, time_bins, time_bin_order, cache):
     @callback(
-        [ 
-            Output("altair-violin-plot", "spec"),
-            Output("altair-bar-chart", "spec"),
-            Output("altair-line-chart", "spec")
-        ],
-        [
-            Input("province-dropdown", "value"),
-            Input("cd-dropdown", "value"),
-            Input("choropleth-map", "signalData"),
-            Input("mode-dropdown", "value"),
-            Input("time-slider", "value")
-        ]
+        Output("preprocessed-chart-data", "data"),
+        Input("time-slider", "value")
     )
-    @cache.memoize()
-    def update_charts(selected_province, selected_cd, signalData, selected_modes, time_range):
-        # ---- Choropleth Map Data Processing ----
-        if signalData and 'select_region' in signalData and 'properties\\.DGUID' in signalData['select_region']:
-            selected_cd = signalData['select_region']['properties\\.DGUID'][0]
-        
-        # ---- Altair Violin Plot with Weighted Horizontal Rules ----
+    def preprocessing_charts(time_range):
         base_data = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
         base_data["time_order"] = base_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t])
         base_data = base_data[base_data["time_order"].between(time_range[0], time_range[1], inclusive="left")]
-
-        if selected_cd:
-            base_data["is_subset"] = base_data["DGUID"] == selected_cd
-        else:
-            base_data["is_subset"] = False
+        return base_data.to_json(date_format="iso", orient="split")
+    
+    @callback(
+        Output("altair-violin-plot", "spec"),
+        Input("preprocessed-chart-data", "data"),
+        Input("cd-dropdown", "value")
+    )
+    @cache.memoize()
+    def update_violin(base_data_json, selected_cd):
+        if base_data_json is None:
+            return no_update  # Prevent updates if no data
         
-        if not selected_modes or len(selected_modes) == 0:
-            if selected_cd:
-                # Highlight only modes that have nonzero AverageCommuteTime in the chosen CD
-                modes_in_cd = base_data[
-                    (base_data["DGUID"] == selected_cd) & (base_data["AverageCommuteTime"] > 0)
-                ]["Main mode of commuting (21)"].unique()
-                selected_modes = list(modes_in_cd)
-            else:
-                # No CD chosen, highlight all modes with nonzero AverageCommuteTime
-                modes_nonzero = base_data[base_data["AverageCommuteTime"] > 0]["Main mode of commuting (21)"].unique()
-                selected_modes = list(modes_nonzero)
+        base_data = pd.read_json(base_data_json, orient="split")
 
-        # Then set the "selected" flag:
-        base_data["selected"] = base_data["Main mode of commuting (21)"].isin(selected_modes)
-
+        # ---- Altair Violin Plot with Weighted Horizontal Rules ----
         # Compute national weighted averages per mode.
         agg_national = (
             base_data.groupby("Main mode of commuting (21)")
@@ -94,15 +72,11 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
             density_list.append(temp_df)
         if density_list:
             density_df = pd.concat(density_list, ignore_index=True)
-            # Add selected flag to density_df
-            density_df["selected"] = density_df["Main mode of commuting (21)"].isin(selected_modes)
         else:
-            density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density", "selected"])
+            density_df = pd.DataFrame(columns=["Main mode of commuting (21)", "AverageCommuteTime", "density"])
 
         density_merged = pd.merge(density_df, agg_national, on="Main mode of commuting (21)", how="left")
         density_merged = pd.merge(density_merged, agg_cd, on="Main mode of commuting (21)", how="left")
-        # Ensure the 'selected' column is present
-        density_merged["selected"] = density_merged["Main mode of commuting (21)"].isin(selected_modes)
 
         # Create the weighted density area with conditional color encoding.
         weighted_violin = alt.Chart(density_merged).mark_area(orient="horizontal", opacity=0.25).encode(
@@ -139,7 +113,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
 
         legend_data = pd.DataFrame({
             "Label": ["Average: Canada (mins)", "Average: Selected CD (mins)"],
-            "Color": ["red", "blue"]
+            "Color": ["#FF3C3C", "blue"]
         })
 
         # Circles
@@ -179,12 +153,44 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
             .configure_header(titleFontSize=14, labelFontSize=12)
         )
 
+        final_violin_dict = final_violin_with_legend.to_dict(format="vega")
+        final_violin_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+        return final_violin_dict
+
+
+    @callback(
+        [ 
+            Output("altair-bar-chart", "spec"),
+            Output("altair-line-chart", "spec")
+        ],
+        [
+            Input("preprocessed-chart-data", "data"),
+            Input("cd-dropdown", "value"),
+            Input("mode-dropdown", "value"),
+            State("mode-dropdown", "options"),
+            Input("time-slider", "value")
+        ]
+    )
+    @cache.memoize()
+    def update_charts(base_data_json, selected_cd, selected_modes, mode_options, time_range):
+        if base_data_json is None:
+            return no_update  # Prevent updates if no data
+        
+        base_data = pd.read_json(base_data_json, orient="split")
+        if not selected_modes:
+            selected_modes = [mode["label"] for mode in mode_options]
+
         # ---- Altair Bar Chart: Stacked Counts for Duration Categories ----
         # Use the same filtered data (base_data) and melt the five duration columns.
         bar_data = base_data.copy()
         if selected_cd:
             bar_data = bar_data[bar_data["DGUID"] == selected_cd]
-        if selected_modes and len(selected_modes) > 0:
+        if selected_modes:
             bar_data = bar_data[bar_data["Main mode of commuting (21)"].isin(selected_modes)]
         bar_data = bar_data[["Main mode of commuting (21)", "Less15", "15to29", "30to44", "45to59", "60plus"]].copy()
         bar_data = bar_data.melt(id_vars=["Main mode of commuting (21)"],
@@ -216,7 +222,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         bar_chart = alt.Chart(bar_data).mark_bar().encode(
             x=alt.X("Count:Q", title="Count of Commute Observations"),
             y=alt.Y("DurationCategory:N",
-                    title="Commute Duration Category",
+                    title=None,
                     sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
                     axis=alt.Axis(labelAlign="left", orient="right")
             ),
@@ -243,10 +249,10 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         
         # # ---- Altair Line Chart: Weighted Average Commute Time by Time of Day ----
         # # Create a separate dataframe for the line chart that is not filtered by the time slider.
-        line_df = df[df["Time arriving at work (16)"].isin(time_bin_order.keys())].copy()
+        line_df = base_data.copy()
         if selected_cd:
             line_df = line_df[line_df["DGUID"] == selected_cd]
-        if selected_modes and len(selected_modes) > 0:
+        if selected_modes:
             line_df = line_df[line_df["Main mode of commuting (21)"].isin(selected_modes)]
         # Filter based on the time slider range:
         line_df = line_df[line_df["Time arriving at work (16)"].apply(lambda t: time_bin_order[t]).between(time_range[0], time_range[1], inclusive="left")]
@@ -305,12 +311,7 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
         )
         
         ## ---- Remove "..." dropdown from all the charts ---- 
-        final_violin_dict = final_violin_with_legend.to_dict(format="vega")
-        final_violin_dict["usermeta"] = {
-            "embedOptions": {
-                "actions": False
-            }
-        }
+    
 
         bar_chart_dict = bar_chart.to_dict(format="vega")
         bar_chart_dict["usermeta"] = {
@@ -326,4 +327,4 @@ def update_all_charts(df, time_bins, time_bin_order, geojson_data, cache):
             }
         }
 
-        return final_violin_dict, bar_chart_dict, line_chart_spec_dict
+        return bar_chart_dict, line_chart_spec_dict
