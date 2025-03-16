@@ -104,7 +104,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
             stroke="black"
         ).encode(
             color=alt.Color("properties.WeightedAverageCommute:Q",
-                            scale=alt.Scale(scheme="orangered"),
+                            scale=alt.Scale(domain=[0, 70],scheme="orangered"),
                             title="Avg Commute (mins)"),
             tooltip=[
                 alt.Tooltip("properties.CDNAME:N", title="Census Division"),
