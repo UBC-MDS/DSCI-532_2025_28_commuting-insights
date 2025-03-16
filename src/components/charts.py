@@ -12,7 +12,7 @@ def create_violin():
     return violin_title, violin_plot
 
 def create_bar():
-    bar_title = html.H5("Commute Duration Distribution")
+    bar_title = html.H5("Commute Length Distribution")
     bar_chart = dvc.Vega(id="altair-bar-chart")
     return bar_title, bar_chart
 

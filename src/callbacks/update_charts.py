@@ -224,7 +224,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             y=alt.Y("DurationCategory:N",
                     title=None,
                     sort=["> 60 mins", "45 - 59 mins", "30 - 44 mins", "15 - 29 mins", "< 15 mins"],
-                    axis=alt.Axis(labelAlign="left", orient="right")
+                    axis=None
             ),
             color=alt.Color("Main mode of commuting (21):N", 
                             title="Mode", 
