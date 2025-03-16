@@ -22,7 +22,7 @@ from src.components.cd_dropdown import create_cd_dropdown
 from src.components.mode_dropdown import create_mode_dropdown
 from src.components.province_dropdown import create_province_dropdown  
 from src.components.time_slider import create_time_slider
-from src.components.charts import create_choropleth, create_violin, create_bar, create_line
+from src.components.charts import create_choropleth, create_violin, create_bar, create_line, create_pie
 from src.components.title_and_footer import create_title, create_reset_button, create_footer
 
 ### --- LOAD AND PREPROCESS DATA ---
@@ -62,6 +62,7 @@ map_title, choropleth_map = create_choropleth()
 violin_title, violin_plot = create_violin()
 bar_title, bar_chart = create_bar()
 line_title, line_chart = create_line()
+pie_title, pie_chart = create_pie()
 
 ### --- LAYOUT ---
 
@@ -84,7 +85,7 @@ app.layout = dbc.Container([
                 style={
                     "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                     "border-radius": "10px",
-                    "margin": "15px",
+                    "margin": "10px",
                     "padding": "10px",
                     "backgroundColor": "#f8f9fa"
                 }
@@ -120,37 +121,25 @@ app.layout = dbc.Container([
             )], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                 "border-radius": "10px",
-                "margin": "15px",
+                "margin": "10px",
                 "height": "100%"
             })
         , xl=12, xxl=5),  # Responsive
 
-
         dbc.Col(
             dbc.Card([
                 dbc.CardBody([
-                    dbc.Row(dbc.Col(bar_title, width=12)),
-                    dbc.Row(dbc.Col(bar_chart, width=12, className="h-100"))
+                    dbc.Row(dbc.Col(violin_title, width=12)),
+                    dbc.Row(dbc.Col(violin_plot, width=12, className="h-100"))
                 ]
             )], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                 "border-radius": "10px",
-                "margin": "15px",
+                "margin": "10px",
                 "height": "100%"
             })
-        , xl=12, xxl=5),
-
-        dbc.Col(
-            dbc.Card([
-                dbc.CardBody([
-                    dbc.Row(id="bot-3-cds-content", className="g-2")  
-                ])
-            ], style={
-                "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
-                "border-radius": "10px",
-                "margin": "15px",
-                "height": "100%"
-            }), xl=12, xxl=2)
+        , xl=12, xxl=7),  # Responsive
+        
     ], className="gx-3 gy-3"),  # Adds spacing between rows/columns
 
 
@@ -161,17 +150,26 @@ app.layout = dbc.Container([
         dbc.Col(
             dbc.Card([
                 dbc.CardBody([
-                    dbc.Row(dbc.Col(violin_title, width=12)),
-                    dbc.Row(dbc.Col(violin_plot, width=12, className="h-100"))
-                ]
-            )], style={
+                    dbc.Row(id="bot-3-cds-content", className="g-2")  
+                ])
+            ], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                 "border-radius": "10px",
-                "margin": "15px",
+                "margin": "10px",
                 "height": "100%"
-            })
-            
-        , xl=12, xxl=5),  # Responsive
+            }), xl=12, xxl=2),
+
+        dbc.Col(
+            dbc.Card([
+                dbc.CardBody([
+                    dbc.Row(id="top-3-cds-content", className="g-2")  # Will be updated with the top 3 CDs
+                ])
+            ], style={
+                "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
+                "border-radius": "10px",
+                "margin": "10px",
+                "height": "100%"
+            }), xl=12, xxl=2),
         
         dbc.Col([
             dbc.Card([
@@ -182,25 +180,45 @@ app.layout = dbc.Container([
             )], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                 "border-radius": "10px",
-                "margin": "15px",
+                "margin": "10px",
                 "height": "100%"
             }),
             html.Br()
-        ], xl=12, xxl=5),
+        ], xl=12, xxl=8),
 
+    ], className="gx-3 gy-3"),  # Adds spacing between rows/columns
+
+    html.Br(),
+
+    dbc.Row([
         dbc.Col(
             dbc.Card([
                 dbc.CardBody([
-                    dbc.Row(id="top-3-cds-content", className="g-2")  # Will be updated with the top 3 CDs
-                ])
-            ], style={
+                    dbc.Row(dbc.Col(bar_title, width=12)),
+                    dbc.Row(dbc.Col(bar_chart, width=12, className="h-100"))
+                ]
+            )], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
                 "border-radius": "10px",
-                "margin": "15px",
+                "margin": "10px",
                 "height": "100%"
-            }), xl=12, xxl=2),
-    ], className="gx-3 gy-3"),  # Adds spacing between rows/columns
-    html.Br(),
+            })
+        , xl=12, xxl=7),
+        dbc.Col(
+            dbc.Card([
+                dbc.CardBody([
+                    dbc.Row(dbc.Col(pie_title, width=12)),
+                    dbc.Row(dbc.Col(pie_chart, width=12, className="h-100"))
+                ]
+            )], style={
+                "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
+                "border-radius": "10px",
+                "margin": "10px",
+                "height": "100%"
+            })
+        , xl=12, xxl=5),
+    ], className="gx-3 gy-3"),
+
     footer
 ], fluid=True)
 

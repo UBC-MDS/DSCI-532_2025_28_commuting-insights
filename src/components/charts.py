@@ -20,3 +20,8 @@ def create_line():
     line_title = html.H5("Average Commute Time by Time of Day")
     line_chart = dvc.Vega(id="altair-line-chart")
     return line_title, line_chart
+
+def create_pie():
+    pie_title = html.H5("Commute mode Distribution")
+    pie_chart = dvc.Vega(id="altair-pie-chart")
+    return pie_title, pie_chart

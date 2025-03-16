@@ -86,7 +86,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         ).properties(width=78, height=400)
 
         # National weighted average (horizontal rule) with conditional color.
-        national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=5).encode(
+        national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=4).encode(
             y=alt.Y("nationalMean:Q"),
             color=alt.value("#FF3C3C"),  # Always red, no conditions
             tooltip=[alt.Tooltip("nationalMean:Q", format=".1f", title="Average: Canada (mins)")]
@@ -96,7 +96,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
         blue_rule = (
             alt.Chart(density_merged)
             .transform_filter("datum.cdMean != 0 && datum.cdMean != null")  # Hides if 0 or missing
-            .mark_rule(strokeWidth=5)
+            .mark_rule(strokeWidth=4)
             .encode(
                 y=alt.Y("cdMean:Q"),
                 color=alt.value("blue"),
@@ -166,7 +166,8 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
     @callback(
         [ 
             Output("altair-bar-chart", "spec"),
-            Output("altair-line-chart", "spec")
+            Output("altair-line-chart", "spec"),
+            Output("altair-pie-chart", "spec")
         ],
         [
             Input("preprocessed-chart-data", "data"),
@@ -353,8 +354,38 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             labelFontSize=13
         )
 
+        ### --- Pie Chart Data Preparation --- ###
+        pie_data = base_data.copy()
+        
+        # Apply filtering: Selected CD + Time Range
+        if selected_cd:
+            pie_data = pie_data[pie_data["DGUID"] == selected_cd]
+        
+        pie_data = pie_data[pie_data["Time arriving at work (16)"].apply(lambda t: time_bin_order[t]).between(time_range[0], time_range[1], inclusive="left")]
+        
+        # Count total occurrences of each travel mode
+        pie_data = pie_data.groupby("Main mode of commuting (21)", as_index=False)["TotalDuration"].sum()
 
+        # Compute percentages
+        pie_data["Percentage"] = pie_data["TotalDuration"] / pie_data["TotalDuration"].sum() * 100
 
+        # Altair Pie Chart
+        pie_chart = alt.Chart(pie_data).mark_arc(innerRadius=50).encode(
+            theta=alt.Theta("Percentage:Q", title="Mode Share (%)"),
+            color=alt.Color("Main mode of commuting (21):N", title="Travel Mode"),
+            tooltip=[
+                alt.Tooltip("Main mode of commuting (21):N", title="Mode"),
+                alt.Tooltip("Percentage:Q", format=".1f", title="Percentage (%)")
+            ]
+        ).properties(
+            width="container",
+            height=425,
+        ).configure_legend(
+            titleFontSize=14,
+            labelFontSize=13 
+        ).configure_axis(
+            titleFontSize=14,
+            labelFontSize=13)
 
 
         
@@ -375,4 +406,12 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             }
         }
 
-        return bar_chart_dict, line_chart_spec_dict
+        pie_chart_dict = pie_chart.to_dict(format="vega")
+        pie_chart_dict["usermeta"] = {
+            "embedOptions": {
+                "actions": False
+            }
+        }
+
+
+        return bar_chart_dict, line_chart_spec_dict, pie_chart_dict
