@@ -67,7 +67,7 @@ def widget_inputs(df):
     ]
 
     # Define the selectable commuting modes
-    available_modes = sorted(df["Main mode of commuting (21)"].unique())  # Sort alphabetically
+    available_modes = sorted(df["Main mode of commuting (21)"].unique())  
     dropdown_options = [{"label": mode, "value": mode} for mode in available_modes]
 
     # Extract unique Census Divisions
