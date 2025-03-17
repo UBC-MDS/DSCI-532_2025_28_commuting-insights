@@ -83,7 +83,7 @@ def update_all_charts(df, time_bins, time_bin_order, cache):
             y=alt.Y("AverageCommuteTime:Q", title="Commute Time (mins)"),
             x=alt.X("density:Q", stack="center", title=None, axis=None),
             color=alt.value("red")  # Always red, no more graying out!
-        ).properties(width=75, height=600)
+        ).properties(width=80, height=600)
 
         # National weighted average (horizontal rule) with conditional color.
         national_rule = alt.Chart(density_merged).mark_rule(strokeWidth=4).encode(

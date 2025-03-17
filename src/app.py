@@ -158,7 +158,7 @@ app.layout = dbc.Container([
                 "border-radius": "10px",
                 "margin": "10px",
                 "height": "100%"
-            }), xl=12, xxl=2),
+            }), lg=6, xl=6, xxl=2),
 
         dbc.Col(
             dbc.Card([
@@ -170,7 +170,7 @@ app.layout = dbc.Container([
                 "border-radius": "10px",
                 "margin": "10px",
                 "height": "100%"
-            }), xl=12, xxl=2),
+            }), lg=6, xl=6, xxl=2),
         
         dbc.Col([
             dbc.Card([
