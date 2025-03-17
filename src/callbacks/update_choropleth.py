@@ -114,7 +114,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
             stroke="black"
         ).encode(
             color=alt.Color("properties.WeightedAverageCommute:Q",
-                            scale=alt.Scale(scheme="orangered"),
+                            scale=alt.Scale(domain=[0, 60], scheme="orangered"),
                             title="Avg Commute (mins)"),
             tooltip=[
                 alt.Tooltip("properties.CDNAME:N", title="Census Division"),
@@ -177,7 +177,7 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
 
         # Reset index for proper ranking
         top_3_df = top_3_df.reset_index(drop=True)
-        bot_3_df = bot_3_df.reset_index(drop=True).iloc[::-1]
+        bot_3_df = bot_3_df.reset_index(drop=True)
 
         # Fixed colors: Red for highest, Green for lowest
         high_color = "#D9534F"  # Bootstrap "danger" red
@@ -224,6 +224,6 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
             ) for i, row in bot_3_df.iterrows()
         ]
 
-        return dbc.Container([html.H5("Top 3 Census Divisions with Highest Commute Time"), dbc.Row(top_3_high_cards, className="g-2")]), dbc.Container([html.H5("Top 3 Census Divisions with Lowest Commute Time"), dbc.Row(top_3_low_cards, className="g-2")])
+        return dbc.Container([dbc.Row(html.H5("CDs with Highest Commute Time")), dbc.Row(top_3_high_cards, className="g-2")]), dbc.Container([dbc.Row(html.H5("CDs with Lowest Commute Time")), dbc.Row(top_3_low_cards, className="g-2")])
 
 

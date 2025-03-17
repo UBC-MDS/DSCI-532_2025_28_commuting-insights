@@ -130,7 +130,8 @@ app.layout = dbc.Container([
             dbc.Card([
                 dbc.CardBody([
                     dbc.Row(dbc.Col(violin_title, width=12)),
-                    dbc.Row(dbc.Col(violin_plot, width=12, className="h-100"))
+                    dbc.Row(dbc.Col(violin_plot, width="auto", className="d-flex justify-content-center align-items-center h-100"),  # Centered
+                    className="d-flex justify-content-center align-items-center h-100")
                 ]
             )], style={
                 "box-shadow": "0 4px 8px 0 rgba(0,0,0,0.2)",
@@ -219,6 +220,7 @@ app.layout = dbc.Container([
         , xl=12, xxl=5),
     ], className="gx-3 gy-3"),
 
+    html.Br(),
     footer
 ], fluid=True)
 
