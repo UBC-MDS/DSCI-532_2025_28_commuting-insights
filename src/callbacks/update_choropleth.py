@@ -226,4 +226,3 @@ def update_choropleth_callback(df, time_bin_order, geojson_data, cache):
 
         return dbc.Container([dbc.Row(html.H5("CDs with Highest Commute Time")), dbc.Row(top_3_high_cards, className="g-2")]), dbc.Container([dbc.Row(html.H5("CDs with Lowest Commute Time")), dbc.Row(top_3_low_cards, className="g-2")])
 
-
